@@ -60,6 +60,50 @@ uv run main.py
 
 Auth resolution order: `LOOM_COOKIE` → `LOOM_AUTH_FILE` → `../auth.json`
 
+### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "loom": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
+      "env": {
+        "LOOM_COOKIE": "connect.sid=s%3A..."
+      }
+    }
+  }
+}
+```
+
+### Claude Code
+
+```sh
+claude mcp add loom -- uv run --directory /path/to/mcp-server main.py
+```
+
+Then set the env var in your shell or `.env` file.
+
+### Cursor / VS Code
+
+Add to `.cursor/mcp.json` or `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "loom": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
+      "env": {
+        "LOOM_COOKIE": "connect.sid=s%3A..."
+      }
+    }
+  }
+}
+```
+
 ## Tools
 
 ### Read (29 tools)

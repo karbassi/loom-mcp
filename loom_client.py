@@ -66,7 +66,10 @@ class LoomClient:
                 raise LoomAPIError(
                     "Access denied. Your session may lack permissions for this operation."
                 )
-            r.raise_for_status()
+            try:
+                r.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                raise LoomAPIError(f"Loom API returned HTTP {e.response.status_code}.")
             body = r.json()
             if body.get("errors"):
                 messages = [e.get("message", "Unknown error") for e in body["errors"]]

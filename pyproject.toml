@@ -7,3 +7,6 @@ dependencies = [
     "fastmcp>=3.0.0b2",
     "httpx>=0.28.1",
 ]
+
+[tool.ruff.lint]
+select = ["T20"]
