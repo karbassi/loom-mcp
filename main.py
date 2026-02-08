@@ -76,10 +76,15 @@ def _ids(values: list[str], label: str = "ID") -> list[str]:
 # Read Tools
 # ---------------------------------------------------------------------------
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def list_videos(
     ctx: Context,
-    limit: Annotated[int, Field(description="Max videos to return (default 50)", ge=1, le=200)] = 50,
+    limit: Annotated[
+        int, Field(description="Max videos to return (default 50)", ge=1, le=200)
+    ] = 50,
 ) -> str:
     """List your Loom videos, sorted by most recent.
 
@@ -100,7 +105,9 @@ async def list_videos(
     return f"Found {len(videos)} videos:\n\n" + "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def search_videos(
     ctx: Context,
     query: Annotated[str, "Search query — supports natural language / semantic search"],
@@ -117,7 +124,9 @@ async def search_videos(
     return f"Found {len(matches)} matching videos:\n\n" + "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID (32-char hex string)"],
@@ -134,7 +143,9 @@ async def get_video(
     return json.dumps(video, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_transcript(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -151,7 +162,9 @@ async def get_transcript(
     return text
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_captions(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -167,7 +180,9 @@ async def get_captions(
     return vtt
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_summary(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -185,7 +200,9 @@ async def get_summary(
     return summary["autoDescription"]
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_chapters(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -201,7 +218,9 @@ async def get_chapters(
     return chapters["content"]
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_comments(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -220,7 +239,9 @@ async def get_comments(
     return "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_download_url(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -233,7 +254,9 @@ async def get_download_url(
     return url
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_tasks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -252,7 +275,9 @@ async def get_tasks(
     return "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_reactions(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -264,14 +289,18 @@ async def get_reactions(
         return "No reactions on this video."
     lines = []
     for r in reactions:
-        user = (r.get("user") or {}).get("display_name") or r.get("anon_user_name", "Anonymous")
+        user = (r.get("user") or {}).get("display_name") or r.get(
+            "anon_user_name", "Anonymous"
+        )
         emoji = r.get("extended_reaction") or r.get("reaction", "")
         ts = f" @{r['time']}s" if r.get("time") is not None else ""
         lines.append(f"[{user}{ts}] {emoji}")
     return "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_meeting_notes(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -284,10 +313,14 @@ async def get_meeting_notes(
     return url
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def list_folders(
     ctx: Context,
-    limit: Annotated[int, Field(description="Max folders to return (default 50)", ge=1, le=200)] = 50,
+    limit: Annotated[
+        int, Field(description="Max folders to return (default 50)", ge=1, le=200)
+    ] = 50,
 ) -> str:
     """List your Loom folders, sorted by most recent."""
     client = _get_client(ctx)
@@ -302,11 +335,15 @@ async def list_folders(
         cursor = result["endCursor"]
     if not folders:
         return "No folders found."
-    lines = [f"{f['id']}  {f['name']}  ({f.get('visibility', 'unknown')})" for f in folders]
+    lines = [
+        f"{f['id']}  {f['name']}  ({f.get('visibility', 'unknown')})" for f in folders
+    ]
     return f"Found {len(folders)} folders:\n\n" + "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def list_spaces(ctx: Context) -> str:
     """List your Loom spaces (workspaces)."""
     client = _get_client(ctx)
@@ -328,7 +365,9 @@ async def list_spaces(ctx: Context) -> str:
     return f"Found {len(spaces)} spaces:\n\n" + "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_backlinks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -347,7 +386,9 @@ async def get_backlinks(
     return "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_key_takeaways(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -363,7 +404,9 @@ async def get_key_takeaways(
     return "\n".join(f"- {t}" for t in takeaways)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_tags(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -376,7 +419,9 @@ async def get_tags(
     return ", ".join(tags)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_description(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -392,7 +437,9 @@ async def get_description(
     return desc
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_confluence_pages(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -406,7 +453,9 @@ async def get_confluence_pages(
     return "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def search_folders(
     ctx: Context,
     query: Annotated[str, "Search query for folders"],
@@ -420,7 +469,9 @@ async def search_folders(
     return f"Found {len(folders)} folders:\n\n" + "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_last_watch_time(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -433,7 +484,9 @@ async def get_last_watch_time(
     return f"Last watched at {time}s"
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_watch_later_count(ctx: Context) -> str:
     """Get the number of videos in your Watch Later list."""
     client = _get_client(ctx)
@@ -441,7 +494,9 @@ async def get_watch_later_count(ctx: Context) -> str:
     return f"Watch Later list has {count} videos"
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_total_videos_count(
     ctx: Context,
     user_id: Annotated[str, "The Loom user ID"],
@@ -452,7 +507,9 @@ async def get_total_videos_count(
     return f"User has {count} videos"
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_frequent_reactions(ctx: Context) -> str:
     """Get your most frequently used emoji reaction types.
 
@@ -465,7 +522,9 @@ async def get_frequent_reactions(ctx: Context) -> str:
     return "Your frequent reactions: " + ", ".join(reactions)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_comment_reactions(
     ctx: Context,
     comment_id: Annotated[str, "The comment ID"],
@@ -473,7 +532,9 @@ async def get_comment_reactions(
 ) -> str:
     """Get emoji reactions on a specific comment."""
     client = _get_client(ctx)
-    reactions = await _call(client.get_comment_reactions(_id(comment_id, "comment ID"), comment_type))
+    reactions = await _call(
+        client.get_comment_reactions(_id(comment_id, "comment ID"), comment_type)
+    )
     if not reactions:
         return "No reactions on this comment."
     lines = []
@@ -484,7 +545,9 @@ async def get_comment_reactions(
     return "\n".join(lines)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_video_details(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -512,7 +575,9 @@ async def get_video_details(
     dur_str = f"{h}h {m}m {s}s" if h else f"{m}m {s}s"
     parts.append(f"**Duration:** {dur_str}")
     parts.append(f"**Created:** {video.get('createdAt', 'Unknown')}")
-    parts.append(f"**Owner:** {(video.get('owner') or {}).get('display_name', 'Unknown')}")
+    parts.append(
+        f"**Owner:** {(video.get('owner') or {}).get('display_name', 'Unknown')}"
+    )
     parts.append(f"**Views:** {(video.get('views') or {}).get('total', 0)}")
     parts.append("")
 
@@ -551,7 +616,9 @@ async def get_video_details(
     return "\n".join(parts)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_user(
     ctx: Context,
     user_id: Annotated[str, "The Loom user ID"],
@@ -564,7 +631,9 @@ async def get_user(
     return json.dumps(user, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def search_workspace_tags(
     ctx: Context,
     query: Annotated[str, "Search query for tags"],
@@ -577,7 +646,9 @@ async def search_workspace_tags(
     return json.dumps(tags, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
+)
 async def get_folder(
     ctx: Context,
     folder_id: Annotated[str, "The Loom folder ID"],
@@ -594,7 +665,10 @@ async def get_folder(
 # Write Tools
 # ---------------------------------------------------------------------------
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def update_video_name(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -606,7 +680,9 @@ async def update_video_name(
     return f"Renamed to: {result.get('name', name)}"
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def update_video_description(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -614,36 +690,60 @@ async def update_video_description(
 ) -> str:
     """Update the description of a Loom video. Overwrites the existing description."""
     client = _get_client(ctx)
-    result = await _call(client.update_video_description(_id(video_id, "video ID"), description))
+    result = await _call(
+        client.update_video_description(_id(video_id, "video ID"), description)
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def update_video_settings(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    settings: Annotated[dict, "Settings to update (e.g. {\"download_enabled\": true, \"comments_enabled\": false})"],
+    settings: Annotated[
+        dict,
+        'Settings to update (e.g. {"download_enabled": true, "comments_enabled": false})',
+    ],
 ) -> str:
     """Update settings on a Loom video such as download_enabled, comments_enabled, etc."""
     client = _get_client(ctx)
-    result = await _call(client.update_video_settings(_id(video_id, "video ID"), settings))
+    result = await _call(
+        client.update_video_settings(_id(video_id, "video ID"), settings)
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+    }
+)
 async def create_comment(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
     content: Annotated[str, "The comment text"],
-    timestamp: Annotated[int, Field(description="Timestamp in seconds to attach comment to (default 0)", ge=0)] = 0,
+    timestamp: Annotated[
+        int,
+        Field(
+            description="Timestamp in seconds to attach comment to (default 0)", ge=0
+        ),
+    ] = 0,
 ) -> str:
     """Post a comment on a Loom video. Each call creates a new comment."""
     client = _get_client(ctx)
-    result = await _call(client.create_comment(_id(video_id, "video ID"), content, timestamp))
+    result = await _call(
+        client.create_comment(_id(video_id, "video ID"), content, timestamp)
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def edit_comment(
     ctx: Context,
     comment_id: Annotated[str, "The comment ID"],
@@ -652,11 +752,17 @@ async def edit_comment(
 ) -> str:
     """Edit an existing comment on a Loom video. Overwrites the comment text."""
     client = _get_client(ctx)
-    result = await _call(client.edit_comment(_id(comment_id, "comment ID"), _id(video_id, "video ID"), content))
+    result = await _call(
+        client.edit_comment(
+            _id(comment_id, "comment ID"), _id(video_id, "video ID"), content
+        )
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def delete_comment(
     ctx: Context,
     comment_id: Annotated[str, "The comment ID"],
@@ -667,20 +773,33 @@ async def delete_comment(
     return f"Comment deleted: {result}"
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+    }
+)
 async def create_task(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
     content: Annotated[str, "The task/action item text"],
-    timestamp: Annotated[int, Field(description="Timestamp in seconds to attach task to (default 0)", ge=0)] = 0,
+    timestamp: Annotated[
+        int,
+        Field(description="Timestamp in seconds to attach task to (default 0)", ge=0),
+    ] = 0,
 ) -> str:
     """Create an action item (task) on a Loom video. Each call creates a new task."""
     client = _get_client(ctx)
-    result = await _call(client.create_task(_id(video_id, "video ID"), content, timestamp))
+    result = await _call(
+        client.create_task(_id(video_id, "video ID"), content, timestamp)
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def update_task(
     ctx: Context,
     task_id: Annotated[str, "The task ID"],
@@ -692,7 +811,9 @@ async def update_task(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def delete_task(
     ctx: Context,
     task_id: Annotated[str, "The task ID"],
@@ -703,7 +824,13 @@ async def delete_task(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def approve_task(
     ctx: Context,
     task_id: Annotated[str, "The task ID"],
@@ -714,7 +841,13 @@ async def approve_task(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def respond_to_task(
     ctx: Context,
     task_id: Annotated[str, "The task ID"],
@@ -726,25 +859,39 @@ async def respond_to_task(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+    }
+)
 async def add_reaction(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    time: Annotated[int, Field(description="Timestamp in seconds for the reaction", ge=0)],
-    reaction_type: Annotated[str, "The reaction type — use get_frequent_reactions to see valid values"],
+    time: Annotated[
+        int, Field(description="Timestamp in seconds for the reaction", ge=0)
+    ],
+    reaction_type: Annotated[
+        str, "The reaction type — use get_frequent_reactions to see valid values"
+    ],
 ) -> str:
     """Add an emoji reaction to a Loom video at a specific timestamp.
 
     Use get_frequent_reactions to discover valid reaction type values.
     """
     client = _get_client(ctx)
-    result = await _call(client.add_reaction(_id(video_id, "video ID"), time, reaction_type))
+    result = await _call(
+        client.add_reaction(_id(video_id, "video ID"), time, reaction_type)
+    )
     if result.get("message"):
         raise ToolError(f"Failed to add reaction: {result['message']}")
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def delete_reaction(
     ctx: Context,
     reaction_id: Annotated[str, "The reaction ID"],
@@ -755,7 +902,13 @@ async def delete_reaction(
     return f"Reaction deleted: {result}"
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def toggle_following(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -767,7 +920,9 @@ async def toggle_following(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def delete_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -781,7 +936,9 @@ async def delete_video(
     return f"Video deleted: {result}"
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def archive_videos(
     ctx: Context,
     video_ids: Annotated[list[str], "List of Loom video IDs to archive"],
@@ -793,7 +950,13 @@ async def archive_videos(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+    }
+)
 async def duplicate_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -804,19 +967,31 @@ async def duplicate_video(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def add_to_watch_later(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    minutes_from_utc: Annotated[int, "Timezone offset in minutes from UTC (default 0)"] = 0,
+    minutes_from_utc: Annotated[
+        int, "Timezone offset in minutes from UTC (default 0)"
+    ] = 0,
 ) -> str:
     """Add a Loom video to your Watch Later list."""
     client = _get_client(ctx)
-    result = await _call(client.add_to_watch_later(_id(video_id, "video ID"), minutes_from_utc))
+    result = await _call(
+        client.add_to_watch_later(_id(video_id, "video ID"), minutes_from_utc)
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def remove_from_watch_later(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -827,7 +1002,13 @@ async def remove_from_watch_later(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+    }
+)
 async def create_folder(
     ctx: Context,
     name: Annotated[str, "The folder name"],
@@ -838,7 +1019,9 @@ async def create_folder(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def rename_folder(
     ctx: Context,
     folder_id: Annotated[str, "The Loom folder ID"],
@@ -850,7 +1033,9 @@ async def rename_folder(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def delete_folders(
     ctx: Context,
     folder_ids: Annotated[list[str], "List of Loom folder IDs to delete"],
@@ -861,7 +1046,9 @@ async def delete_folders(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def move_videos(
     ctx: Context,
     video_ids: Annotated[list[str], "List of Loom video IDs to move"],
@@ -869,11 +1056,17 @@ async def move_videos(
 ) -> str:
     """Move one or more Loom videos to a different folder."""
     client = _get_client(ctx)
-    result = await _call(client.bulk_move_videos(_ids(video_ids, "video ID"), _id(folder_id, "folder ID")))
+    result = await _call(
+        client.bulk_move_videos(
+            _ids(video_ids, "video ID"), _id(folder_id, "folder ID")
+        )
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True})
+@mcp.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
+)
 async def move_folders(
     ctx: Context,
     folder_ids: Annotated[list[str], "List of Loom folder IDs to move"],
@@ -881,11 +1074,21 @@ async def move_folders(
 ) -> str:
     """Move one or more Loom folders into a different parent folder."""
     client = _get_client(ctx)
-    result = await _call(client.bulk_move_folders(_ids(folder_ids, "folder ID"), _id(destination_folder_id, "folder ID")))
+    result = await _call(
+        client.bulk_move_folders(
+            _ids(folder_ids, "folder ID"), _id(destination_folder_id, "folder ID")
+        )
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def recover_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -896,7 +1099,13 @@ async def recover_video(
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def pin_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
@@ -909,7 +1118,13 @@ async def pin_video(
     return f"{action} video {video_id}"
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def add_comment_reaction(
     ctx: Context,
     comment_id: Annotated[str, "The comment GUID"],
@@ -918,11 +1133,21 @@ async def add_comment_reaction(
 ) -> str:
     """Add an emoji reaction to a comment on a Loom video."""
     client = _get_client(ctx)
-    result = await _call(client.add_comment_reaction(_id(comment_id, "comment ID"), reaction, comment_type))
+    result = await _call(
+        client.add_comment_reaction(
+            _id(comment_id, "comment ID"), reaction, comment_type
+        )
+    )
     return json.dumps(result, indent=2)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def toggle_following_tag(
     ctx: Context,
     tag: Annotated[str, "The tag name to follow/unfollow"],
@@ -935,7 +1160,13 @@ async def toggle_following_tag(
     return f"{action} tag '{tag}'"
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True})
+@mcp.tool(
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    }
+)
 async def share_videos_to_spaces(
     ctx: Context,
     video_ids: Annotated[list[str], "List of Loom video IDs to share"],
@@ -943,7 +1174,11 @@ async def share_videos_to_spaces(
 ) -> str:
     """Share one or more Loom videos to one or more spaces."""
     client = _get_client(ctx)
-    result = await _call(client.batch_share_videos_to_spaces(_ids(video_ids, "video ID"), _ids(space_ids, "space ID")))
+    result = await _call(
+        client.batch_share_videos_to_spaces(
+            _ids(video_ids, "video ID"), _ids(space_ids, "space ID")
+        )
+    )
     return json.dumps(result, indent=2)
 
 

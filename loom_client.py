@@ -40,20 +40,32 @@ class LoomClient:
         """Close the underlying HTTP client."""
         await self._http.aclose()
 
-    async def graphql(self, operation: str, query: str, variables: dict | None = None) -> dict:
+    async def graphql(
+        self, operation: str, query: str, variables: dict | None = None
+    ) -> dict:
         async with self._semaphore:
             try:
                 r = await self._http.post(
                     GRAPHQL_URL,
                     headers=self._headers,
-                    json={"operationName": operation, "query": query, "variables": variables or {}},
+                    json={
+                        "operationName": operation,
+                        "query": query,
+                        "variables": variables or {},
+                    },
                 )
             except httpx.ConnectError:
-                raise LoomAPIError("Cannot connect to Loom. Check your internet connection.")
+                raise LoomAPIError(
+                    "Cannot connect to Loom. Check your internet connection."
+                )
             if r.status_code == 401:
-                raise LoomAPIError("Loom session expired. Run login.js to refresh your session.")
+                raise LoomAPIError(
+                    "Loom session expired. Run login.js to refresh your session."
+                )
             if r.status_code == 403:
-                raise LoomAPIError("Access denied. Your session may lack permissions for this operation.")
+                raise LoomAPIError(
+                    "Access denied. Your session may lack permissions for this operation."
+                )
             r.raise_for_status()
             body = r.json()
             if body.get("errors"):
@@ -105,7 +117,9 @@ class LoomClient:
         )
         return data.get("search") or []
 
-    async def search_videos_paginated(self, query: str, limit: int = 50, cursor: str | None = None) -> dict:
+    async def search_videos_paginated(
+        self, query: str, limit: int = 50, cursor: str | None = None
+    ) -> dict:
         """Text search with pagination."""
         data = await self.graphql(
             "SearchVideos",
@@ -571,7 +585,9 @@ class LoomClient:
         result = data.get("getRecentlyFrequentUserReactions")
         return (result or {}).get("reactions") or []
 
-    async def get_comment_reactions(self, comment_id: str, comment_type: str = "COMMENT") -> list[dict]:
+    async def get_comment_reactions(
+        self, comment_id: str, comment_type: str = "COMMENT"
+    ) -> list[dict]:
         data = await self.graphql(
             "GetCommentReactions",
             """query GetCommentReactions($commentGuid: ID!, $commentType: CommentType!) {
@@ -631,7 +647,9 @@ class LoomClient:
         )
         return data.get("updateVideoDescription") or {}
 
-    async def create_comment(self, video_id: str, content: str, timestamp: int = 0) -> dict:
+    async def create_comment(
+        self, video_id: str, content: str, timestamp: int = 0
+    ) -> dict:
         data = await self.graphql(
             "CreateVideoComment",
             """mutation CreateVideoComment($videoId: ID!, $content: String!, $timestamp: Int!) {
@@ -667,7 +685,13 @@ class LoomClient:
         )
         return data.get("duplicateVideo") or {}
 
-    async def edit_comment(self, comment_id: str, video_id: str, content: str, comment_type: str = "COMMENT") -> dict:
+    async def edit_comment(
+        self,
+        comment_id: str,
+        video_id: str,
+        content: str,
+        comment_type: str = "COMMENT",
+    ) -> dict:
         data = await self.graphql(
             "EditComment",
             """mutation EditComment($id: ID!, $videoId: ID!, $content: String!, $type: PublicVideoCommentType!) {
@@ -675,11 +699,18 @@ class LoomClient:
                 __typename
               }
             }""",
-            {"id": comment_id, "videoId": video_id, "content": content, "type": comment_type},
+            {
+                "id": comment_id,
+                "videoId": video_id,
+                "content": content,
+                "type": comment_type,
+            },
         )
         return data.get("editComment") or {}
 
-    async def delete_comment(self, comment_id: str, comment_type: str = "COMMENT") -> bool:
+    async def delete_comment(
+        self, comment_id: str, comment_type: str = "COMMENT"
+    ) -> bool:
         data = await self.graphql(
             "DeleteComment",
             """mutation DeleteComment($id: ID!, $type: PublicVideoCommentType!) {
@@ -689,7 +720,9 @@ class LoomClient:
         )
         return data.get("deleteComment", False)
 
-    async def create_task(self, video_id: str, content: str, timestamp: int = 0) -> dict:
+    async def create_task(
+        self, video_id: str, content: str, timestamp: int = 0
+    ) -> dict:
         data = await self.graphql(
             "CreateVideoTask",
             """mutation CreateVideoTask($videoId: ID!, $content: String!, $timestamp: Int!) {
@@ -785,7 +818,9 @@ class LoomClient:
         )
         return data.get("deleteVideo", False)
 
-    async def add_to_watch_later(self, video_id: str, minutes_from_utc: int = 0) -> dict:
+    async def add_to_watch_later(
+        self, video_id: str, minutes_from_utc: int = 0
+    ) -> dict:
         data = await self.graphql(
             "AddVideoToWatchLaterList",
             """mutation AddVideoToWatchLaterList($videoId: ID!, $minutesFromUTC: Int!) {
@@ -883,7 +918,9 @@ class LoomClient:
             return []
         return result.get("tags") or []
 
-    async def bulk_move_videos(self, video_ids: list[str], new_parent_folder_id: str) -> dict:
+    async def bulk_move_videos(
+        self, video_ids: list[str], new_parent_folder_id: str
+    ) -> dict:
         data = await self.graphql(
             "BulkMoveVideos",
             """mutation BulkMoveVideos($videoIds: [ID!]!, $newParentFolderId: ID!) {
@@ -895,7 +932,9 @@ class LoomClient:
         )
         return data.get("bulkMoveVideos") or {}
 
-    async def bulk_move_folders(self, folder_ids: list[str], new_parent_folder_id: str) -> dict:
+    async def bulk_move_folders(
+        self, folder_ids: list[str], new_parent_folder_id: str
+    ) -> dict:
         data = await self.graphql(
             "BulkMoveFolders",
             """mutation BulkMoveFolders($folderIds: [ID!]!, $newParentFolderId: ID!) {
@@ -931,7 +970,9 @@ class LoomClient:
         )
         return data.get("updateVideoPinStatus") or {}
 
-    async def add_comment_reaction(self, comment_guid: str, extended_reaction: str, comment_type: str = "COMMENT") -> dict:
+    async def add_comment_reaction(
+        self, comment_guid: str, extended_reaction: str, comment_type: str = "COMMENT"
+    ) -> dict:
         data = await self.graphql(
             "AddCommentReaction",
             """mutation AddCommentReaction($input: AddCommentReactionInput!) {
@@ -939,7 +980,13 @@ class LoomClient:
                 __typename
               }
             }""",
-            {"input": {"commentGuid": comment_guid, "commentType": comment_type, "extendedReaction": extended_reaction}},
+            {
+                "input": {
+                    "commentGuid": comment_guid,
+                    "commentType": comment_type,
+                    "extendedReaction": extended_reaction,
+                }
+            },
         )
         return data.get("addCommentReaction") or {}
 
@@ -955,7 +1002,9 @@ class LoomClient:
         )
         return data.get("toggleFollowingTag") or {}
 
-    async def batch_share_videos_to_spaces(self, video_ids: list[str], space_ids: list[str]) -> dict:
+    async def batch_share_videos_to_spaces(
+        self, video_ids: list[str], space_ids: list[str]
+    ) -> dict:
         data = await self.graphql(
             "BatchShareVideosToSpaces",
             """mutation BatchShareVideosToSpaces($videoIds: [ID!]!, $spaceIds: [ID!]!) {
