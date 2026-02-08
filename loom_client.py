@@ -6,6 +6,10 @@ import httpx
 GRAPHQL_URL = "https://www.loom.com/graphql"
 
 
+class LoomAPIError(Exception):
+    """Raised when the Loom GraphQL API returns an error."""
+
+
 class LoomClient:
     def __init__(self, cookies: str | None = None, auth_file: str | Path | None = None):
         if cookies:
@@ -30,16 +34,28 @@ class LoomClient:
             "cookie": self.cookies,
         }
 
+    async def aclose(self):
+        """Close the underlying HTTP client."""
+        await self._http.aclose()
+
     async def graphql(self, operation: str, query: str, variables: dict | None = None) -> dict:
-        r = await self._http.post(
-            GRAPHQL_URL,
-            headers=self._headers,
-            json={"operationName": operation, "query": query, "variables": variables or {}},
-        )
+        try:
+            r = await self._http.post(
+                GRAPHQL_URL,
+                headers=self._headers,
+                json={"operationName": operation, "query": query, "variables": variables or {}},
+            )
+        except httpx.ConnectError:
+            raise LoomAPIError("Cannot connect to Loom. Check your internet connection.")
+        if r.status_code == 401:
+            raise LoomAPIError("Loom session expired. Run login.js to refresh your session.")
+        if r.status_code == 403:
+            raise LoomAPIError("Access denied. Your session may lack permissions for this operation.")
         r.raise_for_status()
         body = r.json()
         if body.get("errors"):
-            raise Exception(f"GraphQL error: {json.dumps(body['errors'])}")
+            messages = [e.get("message", "Unknown error") for e in body["errors"]]
+            raise LoomAPIError("; ".join(messages))
         return body["data"]
 
     async def list_videos(self, limit: int = 50, cursor: str | None = None) -> dict:
