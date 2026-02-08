@@ -1,7 +1,7 @@
 [project]
 name = "mcp-server"
 version = "0.1.0"
-description = "Add your description here"
+description = "MCP server for Loom's internal GraphQL API"
 requires-python = ">=3.14"
 dependencies = [
     "fastmcp>=3.0.0b2",
