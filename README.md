@@ -1,22 +1,48 @@
 # Loom MCP Server
 
-[MCP](https://modelcontextprotocol.io) server exposing 58 tools for Loom's internal GraphQL API. Works with Claude, Cursor, or any MCP-compatible client. No public API exists — this uses cookie-based auth from a captured browser session.
+[MCP](https://modelcontextprotocol.io) server exposing 58 tools for Loom's internal GraphQL API. Works with Claude, Cursor, or any MCP-compatible client.
 
 ## Setup
 
-1. **Get `auth.json`** — run `node login.js` from the [parent repo](../) to open a browser, log in to Loom, and save the session cookies.
+### 1. Auth (pick one)
 
-2. **Install dependencies:**
-   ```sh
-   uv sync
-   ```
+**Option A: Cookie from browser (quickest)**
 
-3. **Run:**
-   ```sh
-   uv run main.py
-   ```
+1. Open Loom in your browser, open DevTools → Application → Cookies
+2. Copy the `connect.sid` value
+3. Set `LOOM_COOKIE` in your MCP config (see below)
 
-### MCP client configuration
+**Option B: Auth file**
+
+1. Run `node login.js` from the [parent repo](../) to capture a browser session
+2. The server looks for `../auth.json` by default. Set `LOOM_AUTH_FILE` to override.
+
+### 2. Install and run
+
+```sh
+uv sync
+uv run main.py
+```
+
+### 3. MCP client configuration
+
+**With `LOOM_COOKIE` (no auth file needed):**
+
+```json
+{
+  "mcpServers": {
+    "loom": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
+      "env": {
+        "LOOM_COOKIE": "connect.sid=s%3A..."
+      }
+    }
+  }
+}
+```
+
+**With auth file:**
 
 ```json
 {
@@ -32,7 +58,7 @@
 }
 ```
 
-The server looks for `../auth.json` by default. Set `LOOM_AUTH_FILE` to override.
+Auth resolution order: `LOOM_COOKIE` → `LOOM_AUTH_FILE` → `../auth.json`
 
 ## Tools
 
@@ -109,3 +135,8 @@ The server looks for `../auth.json` by default. Set `LOOM_AUTH_FILE` to override
 If you get auth errors, your session has expired (~30 days). Either:
 - Run `node refresh.js` from the parent repo (headless, extends the session)
 - Run `node login.js` from the parent repo (opens browser for fresh login)
+
+## Requirements
+
+- Python 3.14+
+- [uv](https://docs.astral.sh/uv/) package manager

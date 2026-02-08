@@ -7,8 +7,6 @@ from pydantic import Field
 
 from loom_client import LoomClient
 
-AUTH_FILE = os.environ.get("LOOM_AUTH_FILE", os.path.join(os.path.dirname(__file__), "..", "auth.json"))
-
 mcp = FastMCP("Loom", instructions="Access Loom videos, transcripts, summaries, and comments.")
 
 _client: LoomClient | None = None
@@ -17,7 +15,12 @@ _client: LoomClient | None = None
 def get_client() -> LoomClient:
     global _client
     if _client is None:
-        _client = LoomClient(AUTH_FILE)
+        cookie = os.environ.get("LOOM_COOKIE")
+        if cookie:
+            _client = LoomClient(cookies=cookie)
+        else:
+            auth_file = os.environ.get("LOOM_AUTH_FILE", os.path.join(os.path.dirname(__file__), "..", "auth.json"))
+            _client = LoomClient(auth_file=auth_file)
     return _client
 
 

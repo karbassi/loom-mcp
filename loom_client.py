@@ -7,13 +7,18 @@ GRAPHQL_URL = "https://www.loom.com/graphql"
 
 
 class LoomClient:
-    def __init__(self, auth_file: str | Path = "auth.json"):
-        state = json.loads(Path(auth_file).read_text())
-        self.cookies = "; ".join(
-            f"{c['name']}={c['value']}"
-            for c in state["cookies"]
-            if "loom.com" in c.get("domain", "")
-        )
+    def __init__(self, cookies: str | None = None, auth_file: str | Path | None = None):
+        if cookies:
+            self.cookies = cookies
+        elif auth_file:
+            state = json.loads(Path(auth_file).read_text())
+            self.cookies = "; ".join(
+                f"{c['name']}={c['value']}"
+                for c in state["cookies"]
+                if "loom.com" in c.get("domain", "")
+            )
+        else:
+            raise ValueError("Either cookies or auth_file must be provided")
         self._http = httpx.AsyncClient(timeout=30)
 
     @property
