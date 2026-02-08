@@ -1,3 +1,4 @@
+import asyncio
 import json
 from pathlib import Path
 
@@ -24,6 +25,7 @@ class LoomClient:
         else:
             raise ValueError("Either cookies or auth_file must be provided")
         self._http = httpx.AsyncClient(timeout=30)
+        self._semaphore = asyncio.Semaphore(5)
 
     @property
     def _headers(self) -> dict:
@@ -39,24 +41,25 @@ class LoomClient:
         await self._http.aclose()
 
     async def graphql(self, operation: str, query: str, variables: dict | None = None) -> dict:
-        try:
-            r = await self._http.post(
-                GRAPHQL_URL,
-                headers=self._headers,
-                json={"operationName": operation, "query": query, "variables": variables or {}},
-            )
-        except httpx.ConnectError:
-            raise LoomAPIError("Cannot connect to Loom. Check your internet connection.")
-        if r.status_code == 401:
-            raise LoomAPIError("Loom session expired. Run login.js to refresh your session.")
-        if r.status_code == 403:
-            raise LoomAPIError("Access denied. Your session may lack permissions for this operation.")
-        r.raise_for_status()
-        body = r.json()
-        if body.get("errors"):
-            messages = [e.get("message", "Unknown error") for e in body["errors"]]
-            raise LoomAPIError("; ".join(messages))
-        return body["data"]
+        async with self._semaphore:
+            try:
+                r = await self._http.post(
+                    GRAPHQL_URL,
+                    headers=self._headers,
+                    json={"operationName": operation, "query": query, "variables": variables or {}},
+                )
+            except httpx.ConnectError:
+                raise LoomAPIError("Cannot connect to Loom. Check your internet connection.")
+            if r.status_code == 401:
+                raise LoomAPIError("Loom session expired. Run login.js to refresh your session.")
+            if r.status_code == 403:
+                raise LoomAPIError("Access denied. Your session may lack permissions for this operation.")
+            r.raise_for_status()
+            body = r.json()
+            if body.get("errors"):
+                messages = [e.get("message", "Unknown error") for e in body["errors"]]
+                raise LoomAPIError("; ".join(messages))
+            return body["data"]
 
     async def list_videos(self, limit: int = 50, cursor: str | None = None) -> dict:
         data = await self.graphql(
