@@ -1,11 +1,20 @@
 import json
 import os
+from pathlib import Path
 from typing import Annotated
 
 from fastmcp import FastMCP
 from pydantic import Field
 
 from loom_client import LoomClient
+
+# Load ../.env (no dependencies)
+_env_path = Path(__file__).parent.parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text().splitlines():
+        if _line.strip() and not _line.startswith("#") and "=" in _line:
+            _k, _, _v = _line.partition("=")
+            os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
 
 mcp = FastMCP("Loom", instructions="Access Loom videos, transcripts, summaries, and comments.")
 
