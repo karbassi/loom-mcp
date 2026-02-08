@@ -6,6 +6,7 @@ Run:      pytest test_server.py -v
 
 import os
 import re
+from unittest.mock import AsyncMock, patch
 
 # Set dummy auth so lifespan can initialize without real credentials
 os.environ.setdefault("LOOM_COOKIE", "test=dummy")
@@ -13,7 +14,8 @@ os.environ.setdefault("LOOM_COOKIE", "test=dummy")
 import pytest
 from fastmcp.client import Client
 
-from main import mcp
+from loom_client import LoomAPIError
+from main import mcp, _id, _ids
 
 READ_TOOLS = {
     "list_videos", "search_videos", "get_video", "get_transcript",
@@ -134,3 +136,178 @@ async def test_tool_names_are_snake_case(client):
     tools = await client.list_tools()
     for tool in tools:
         assert re.fullmatch(r"[a-z][a-z0-9_]*", tool.name), f"{tool.name} is not snake_case"
+
+
+# ---------------------------------------------------------------------------
+# Input ID validation (synchronous — no client needed)
+# ---------------------------------------------------------------------------
+
+def test_id_accepts_valid_hex():
+    assert _id("abc123def456", "test") == "abc123def456"
+
+
+def test_id_accepts_uuid():
+    assert _id("550e8400-e29b-41d4-a716-446655440000", "test")
+
+
+def test_id_accepts_underscores_dots():
+    assert _id("my_folder.v2", "test") == "my_folder.v2"
+
+
+def test_id_rejects_empty():
+    from fastmcp.exceptions import ToolError
+    with pytest.raises(ToolError, match="Invalid test"):
+        _id("", "test")
+
+
+def test_id_rejects_spaces():
+    from fastmcp.exceptions import ToolError
+    with pytest.raises(ToolError):
+        _id("abc 123", "test")
+
+
+def test_id_rejects_slashes():
+    from fastmcp.exceptions import ToolError
+    with pytest.raises(ToolError):
+        _id("../../etc/passwd", "test")
+
+
+def test_id_rejects_too_long():
+    from fastmcp.exceptions import ToolError
+    with pytest.raises(ToolError):
+        _id("a" * 201, "test")
+
+
+def test_ids_validates_all():
+    assert _ids(["abc", "def"], "test") == ["abc", "def"]
+
+
+def test_ids_rejects_any_invalid():
+    from fastmcp.exceptions import ToolError
+    with pytest.raises(ToolError):
+        _ids(["valid", "has space"], "test")
+
+
+# ---------------------------------------------------------------------------
+# Mocked happy-path tests
+# ---------------------------------------------------------------------------
+
+VALID_ID = "a" * 32
+
+
+@pytest.mark.anyio
+async def test_get_video_happy_path(client):
+    mock_video = {
+        "id": VALID_ID, "name": "Test Video", "createdAt": "2024-01-01",
+        "playable_duration": 120, "owner": {"display_name": "Alice"},
+        "views": {"total": 10},
+    }
+    with patch("main.LoomClient.get_video", new_callable=AsyncMock, return_value=mock_video):
+        result = await client.call_tool("get_video", {"video_id": VALID_ID})
+    text = result.content[0].text
+    assert "Test Video" in text
+    assert VALID_ID in text
+
+
+@pytest.mark.anyio
+async def test_get_transcript_happy_path(client):
+    mock_text = "00:00 [Alice] Hello world\n00:05 [Bob] Hi there"
+    with patch("main.LoomClient.get_transcript_text", new_callable=AsyncMock, return_value=mock_text):
+        result = await client.call_tool("get_transcript", {"video_id": VALID_ID})
+    assert "Hello world" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_transcript_empty(client):
+    with patch("main.LoomClient.get_transcript_text", new_callable=AsyncMock, return_value=None):
+        result = await client.call_tool("get_transcript", {"video_id": VALID_ID})
+    assert "No transcript" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_search_videos_happy_path(client):
+    mock_results = [{"id": VALID_ID, "name": "Demo"}]
+    with patch("main.LoomClient.search_videos", new_callable=AsyncMock, return_value=mock_results):
+        result = await client.call_tool("search_videos", {"query": "demo"})
+    assert "Demo" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_search_videos_empty(client):
+    with patch("main.LoomClient.search_videos", new_callable=AsyncMock, return_value=[]):
+        result = await client.call_tool("search_videos", {"query": "nonexistent"})
+    assert "No videos matching" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_comments_happy_path(client):
+    mock_comments = [
+        {"user_name": "Alice", "content": "Great video!", "time_stamp": 5, "children_comments": []},
+    ]
+    with patch("main.LoomClient.get_comments", new_callable=AsyncMock, return_value=mock_comments):
+        result = await client.call_tool("get_comments", {"video_id": VALID_ID})
+    assert "Alice" in result.content[0].text
+    assert "Great video!" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_comments_empty(client):
+    with patch("main.LoomClient.get_comments", new_callable=AsyncMock, return_value=[]):
+        result = await client.call_tool("get_comments", {"video_id": VALID_ID})
+    assert "No comments" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_update_video_name_happy_path(client):
+    with patch("main.LoomClient.update_video_name", new_callable=AsyncMock, return_value={"name": "New Name"}):
+        result = await client.call_tool("update_video_name", {"video_id": VALID_ID, "name": "New Name"})
+    assert "Renamed to: New Name" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_delete_video_happy_path(client):
+    with patch("main.LoomClient.delete_video", new_callable=AsyncMock, return_value=True):
+        result = await client.call_tool("delete_video", {"video_id": VALID_ID})
+    assert "Video deleted" in result.content[0].text
+
+
+# ---------------------------------------------------------------------------
+# Mocked error-path tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.anyio
+async def test_get_video_api_error(client):
+    with patch("main.LoomClient.get_video", new_callable=AsyncMock, side_effect=LoomAPIError("Session expired")):
+        result = await client.call_tool("get_video", {"video_id": VALID_ID}, raise_on_error=False)
+    assert result.is_error
+    assert "Session expired" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_video_private(client):
+    with patch("main.LoomClient.get_video", new_callable=AsyncMock, return_value={"message": "Private video"}):
+        result = await client.call_tool("get_video", {"video_id": VALID_ID}, raise_on_error=False)
+    assert result.is_error
+    assert "Private video" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_video_invalid_id(client):
+    result = await client.call_tool("get_video", {"video_id": "../../etc/passwd"}, raise_on_error=False)
+    assert result.is_error
+    assert "Invalid video ID" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_delete_comment_api_error(client):
+    with patch("main.LoomClient.delete_comment", new_callable=AsyncMock, side_effect=LoomAPIError("Not found")):
+        result = await client.call_tool("delete_comment", {"comment_id": VALID_ID}, raise_on_error=False)
+    assert result.is_error
+    assert "Not found" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_archive_videos_invalid_ids(client):
+    result = await client.call_tool("archive_videos", {"video_ids": ["valid123", "has space"]}, raise_on_error=False)
+    assert result.is_error
+    assert "Invalid video ID" in result.content[0].text

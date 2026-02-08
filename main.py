@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
@@ -9,6 +10,8 @@ from fastmcp.exceptions import ToolError
 from pydantic import Field
 
 from loom_client import LoomClient, LoomAPIError
+
+_ID_RE = re.compile(r"\A[a-zA-Z0-9_.\-]{1,200}\Z")
 
 # Load ../.env (no dependencies)
 _env_path = Path(__file__).parent.parent / ".env"
@@ -53,6 +56,20 @@ async def _call(coro):
         return await coro
     except LoomAPIError as e:
         raise ToolError(str(e)) from None
+
+
+def _id(value: str, label: str = "ID") -> str:
+    """Validate a single resource ID."""
+    if not _ID_RE.fullmatch(value):
+        raise ToolError(f"Invalid {label}: {value!r}")
+    return value
+
+
+def _ids(values: list[str], label: str = "ID") -> list[str]:
+    """Validate a list of resource IDs."""
+    for v in values:
+        _id(v, label)
+    return values
 
 
 # ---------------------------------------------------------------------------
@@ -111,7 +128,7 @@ async def get_video(
     use get_video_details instead.
     """
     client = _get_client(ctx)
-    video = await _call(client.get_video(video_id))
+    video = await _call(client.get_video(_id(video_id, "video ID")))
     if video.get("message"):
         raise ToolError(f"Cannot access video {video_id}: {video['message']}")
     return json.dumps(video, indent=2)
@@ -128,7 +145,7 @@ async def get_transcript(
     in WebVTT format, use get_captions instead.
     """
     client = _get_client(ctx)
-    text = await _call(client.get_transcript_text(video_id))
+    text = await _call(client.get_transcript_text(_id(video_id, "video ID")))
     if not text:
         return "No transcript available for this video."
     return text
@@ -144,7 +161,7 @@ async def get_captions(
     Ideal for precise timing analysis. For plain text with speaker names, use get_transcript instead.
     """
     client = _get_client(ctx)
-    vtt = await _call(client.get_captions(video_id))
+    vtt = await _call(client.get_captions(_id(video_id, "video ID")))
     if not vtt:
         return "No captions available for this video."
     return vtt
@@ -162,7 +179,7 @@ async def get_summary(
     For chapter markers, use get_chapters.
     """
     client = _get_client(ctx)
-    summary = await _call(client.get_summary(video_id))
+    summary = await _call(client.get_summary(_id(video_id, "video ID")))
     if not summary or not summary.get("autoDescription"):
         return "No AI summary available for this video."
     return summary["autoDescription"]
@@ -178,7 +195,7 @@ async def get_chapters(
     Useful for navigating long videos. For a narrative summary, use get_summary.
     """
     client = _get_client(ctx)
-    chapters = await _call(client.get_chapters(video_id))
+    chapters = await _call(client.get_chapters(_id(video_id, "video ID")))
     if not chapters or not chapters.get("content"):
         return "No chapters available for this video."
     return chapters["content"]
@@ -191,7 +208,7 @@ async def get_comments(
 ) -> str:
     """Get comments on a Loom video, including threaded replies and timestamps."""
     client = _get_client(ctx)
-    comments = await _call(client.get_comments(video_id))
+    comments = await _call(client.get_comments(_id(video_id, "video ID")))
     if not comments:
         return "No comments on this video."
     lines = []
@@ -210,7 +227,7 @@ async def get_download_url(
 ) -> str:
     """Get a signed download URL for the MP4 file of a Loom video. The URL is temporary and will expire."""
     client = _get_client(ctx)
-    url = await _call(client.get_download_url(video_id))
+    url = await _call(client.get_download_url(_id(video_id, "video ID")))
     if not url:
         return "No download URL available for this video."
     return url
@@ -223,7 +240,7 @@ async def get_tasks(
 ) -> str:
     """Get AI-generated action items (tasks) from a Loom video, including assignee, status, and timestamp."""
     client = _get_client(ctx)
-    tasks = await _call(client.get_tasks(video_id))
+    tasks = await _call(client.get_tasks(_id(video_id, "video ID")))
     if not tasks:
         return "No tasks/action items for this video."
     lines = []
@@ -242,7 +259,7 @@ async def get_reactions(
 ) -> str:
     """Get emoji reactions on a Loom video, including who reacted and at what timestamp."""
     client = _get_client(ctx)
-    reactions = await _call(client.get_reactions(video_id))
+    reactions = await _call(client.get_reactions(_id(video_id, "video ID")))
     if not reactions:
         return "No reactions on this video."
     lines = []
@@ -261,7 +278,7 @@ async def get_meeting_notes(
 ) -> str:
     """Get the Confluence meeting notes URL linked to a Loom video."""
     client = _get_client(ctx)
-    url = await _call(client.get_meeting_notes_url(video_id))
+    url = await _call(client.get_meeting_notes_url(_id(video_id, "video ID")))
     if not url:
         return "No meeting notes linked to this video."
     return url
@@ -318,7 +335,7 @@ async def get_backlinks(
 ) -> str:
     """Get external references (backlinks) to a Loom video — where it's been shared or embedded."""
     client = _get_client(ctx)
-    backlinks = await _call(client.get_backlinks(video_id))
+    backlinks = await _call(client.get_backlinks(_id(video_id, "video ID")))
     if not backlinks:
         return "No backlinks for this video."
     lines = []
@@ -340,7 +357,7 @@ async def get_key_takeaways(
     For a narrative summary, use get_summary. For a detailed timestamped breakdown, use get_description.
     """
     client = _get_client(ctx)
-    takeaways = await _call(client.get_key_takeaways(video_id))
+    takeaways = await _call(client.get_key_takeaways(_id(video_id, "video ID")))
     if not takeaways:
         return "No key takeaways available for this video."
     return "\n".join(f"- {t}" for t in takeaways)
@@ -353,7 +370,7 @@ async def get_tags(
 ) -> str:
     """Get tags on a Loom video."""
     client = _get_client(ctx)
-    tags = await _call(client.get_tags(video_id))
+    tags = await _call(client.get_tags(_id(video_id, "video ID")))
     if not tags:
         return "No tags on this video."
     return ", ".join(tags)
@@ -369,7 +386,7 @@ async def get_description(
     More detailed than get_summary. For a brief 1-2 sentence summary, use get_summary instead.
     """
     client = _get_client(ctx)
-    desc = await _call(client.get_description(video_id))
+    desc = await _call(client.get_description(_id(video_id, "video ID")))
     if not desc:
         return "No description available for this video."
     return desc
@@ -382,7 +399,7 @@ async def get_confluence_pages(
 ) -> str:
     """Get Confluence pages linked to a Loom video."""
     client = _get_client(ctx)
-    pages = await _call(client.get_confluence_pages(video_id))
+    pages = await _call(client.get_confluence_pages(_id(video_id, "video ID")))
     if not pages:
         return "No Confluence pages linked to this video."
     lines = [f"- [{p.get('title', 'Untitled')}]({p.get('url', '')})" for p in pages]
@@ -410,7 +427,7 @@ async def get_last_watch_time(
 ) -> str:
     """Get the last timestamp (in seconds) where you stopped watching a Loom video."""
     client = _get_client(ctx)
-    time = await _call(client.get_last_watch_time(video_id))
+    time = await _call(client.get_last_watch_time(_id(video_id, "video ID")))
     if time is None:
         return "No watch history for this video."
     return f"Last watched at {time}s"
@@ -431,7 +448,7 @@ async def get_total_videos_count(
 ) -> str:
     """Get the total number of videos created by a user."""
     client = _get_client(ctx)
-    count = await _call(client.get_total_videos_count(user_id))
+    count = await _call(client.get_total_videos_count(_id(user_id, "user ID")))
     return f"User has {count} videos"
 
 
@@ -456,7 +473,7 @@ async def get_comment_reactions(
 ) -> str:
     """Get emoji reactions on a specific comment."""
     client = _get_client(ctx)
-    reactions = await _call(client.get_comment_reactions(comment_id, comment_type))
+    reactions = await _call(client.get_comment_reactions(_id(comment_id, "comment ID"), comment_type))
     if not reactions:
         return "No reactions on this comment."
     lines = []
@@ -476,6 +493,7 @@ async def get_video_details(
 
     Use this when you need a complete picture of a video. For just metadata, use get_video.
     """
+    _id(video_id, "video ID")
     client = _get_client(ctx)
     video = await _call(client.get_video(video_id))
     if video.get("message"):
@@ -540,7 +558,7 @@ async def get_user(
 ) -> str:
     """Get a Loom user's profile by their ID — name, email, company, and avatar."""
     client = _get_client(ctx)
-    user = await _call(client.get_user_by_id(user_id))
+    user = await _call(client.get_user_by_id(_id(user_id, "user ID")))
     if not user:
         raise ToolError(f"User not found: {user_id}")
     return json.dumps(user, indent=2)
@@ -566,7 +584,7 @@ async def get_folder(
 ) -> str:
     """Get details of a Loom folder including name, visibility, and creator."""
     client = _get_client(ctx)
-    folder = await _call(client.get_folder(folder_id))
+    folder = await _call(client.get_folder(_id(folder_id, "folder ID")))
     if not folder:
         raise ToolError(f"Folder not found: {folder_id}")
     return json.dumps(folder, indent=2)
@@ -584,7 +602,7 @@ async def update_video_name(
 ) -> str:
     """Rename a Loom video. Overwrites the existing name."""
     client = _get_client(ctx)
-    result = await _call(client.update_video_name(video_id, name))
+    result = await _call(client.update_video_name(_id(video_id, "video ID"), name))
     return f"Renamed to: {result.get('name', name)}"
 
 
@@ -596,7 +614,7 @@ async def update_video_description(
 ) -> str:
     """Update the description of a Loom video. Overwrites the existing description."""
     client = _get_client(ctx)
-    result = await _call(client.update_video_description(video_id, description))
+    result = await _call(client.update_video_description(_id(video_id, "video ID"), description))
     return json.dumps(result, indent=2)
 
 
@@ -608,7 +626,7 @@ async def update_video_settings(
 ) -> str:
     """Update settings on a Loom video such as download_enabled, comments_enabled, etc."""
     client = _get_client(ctx)
-    result = await _call(client.update_video_settings(video_id, settings))
+    result = await _call(client.update_video_settings(_id(video_id, "video ID"), settings))
     return json.dumps(result, indent=2)
 
 
@@ -621,7 +639,7 @@ async def create_comment(
 ) -> str:
     """Post a comment on a Loom video. Each call creates a new comment."""
     client = _get_client(ctx)
-    result = await _call(client.create_comment(video_id, content, timestamp))
+    result = await _call(client.create_comment(_id(video_id, "video ID"), content, timestamp))
     return json.dumps(result, indent=2)
 
 
@@ -634,7 +652,7 @@ async def edit_comment(
 ) -> str:
     """Edit an existing comment on a Loom video. Overwrites the comment text."""
     client = _get_client(ctx)
-    result = await _call(client.edit_comment(comment_id, video_id, content))
+    result = await _call(client.edit_comment(_id(comment_id, "comment ID"), _id(video_id, "video ID"), content))
     return json.dumps(result, indent=2)
 
 
@@ -645,7 +663,7 @@ async def delete_comment(
 ) -> str:
     """Delete a comment from a Loom video. This cannot be undone."""
     client = _get_client(ctx)
-    result = await _call(client.delete_comment(comment_id))
+    result = await _call(client.delete_comment(_id(comment_id, "comment ID")))
     return f"Comment deleted: {result}"
 
 
@@ -658,7 +676,7 @@ async def create_task(
 ) -> str:
     """Create an action item (task) on a Loom video. Each call creates a new task."""
     client = _get_client(ctx)
-    result = await _call(client.create_task(video_id, content, timestamp))
+    result = await _call(client.create_task(_id(video_id, "video ID"), content, timestamp))
     return json.dumps(result, indent=2)
 
 
@@ -670,7 +688,7 @@ async def update_task(
 ) -> str:
     """Update the content of an action item (task) on a Loom video."""
     client = _get_client(ctx)
-    result = await _call(client.update_video_task(task_id, content))
+    result = await _call(client.update_video_task(_id(task_id, "task ID"), content))
     return json.dumps(result, indent=2)
 
 
@@ -681,7 +699,7 @@ async def delete_task(
 ) -> str:
     """Delete an action item (task) from a Loom video. This cannot be undone."""
     client = _get_client(ctx)
-    result = await _call(client.delete_task(task_id))
+    result = await _call(client.delete_task(_id(task_id, "task ID")))
     return json.dumps(result, indent=2)
 
 
@@ -692,7 +710,7 @@ async def approve_task(
 ) -> str:
     """Mark an action item (task) as approved on a Loom video."""
     client = _get_client(ctx)
-    result = await _call(client.approve_task(task_id))
+    result = await _call(client.approve_task(_id(task_id, "task ID")))
     return json.dumps(result, indent=2)
 
 
@@ -704,7 +722,7 @@ async def respond_to_task(
 ) -> str:
     """Respond to an action item (task) on a Loom video."""
     client = _get_client(ctx)
-    result = await _call(client.respond_to_task(task_id, responded))
+    result = await _call(client.respond_to_task(_id(task_id, "task ID"), responded))
     return json.dumps(result, indent=2)
 
 
@@ -720,7 +738,7 @@ async def add_reaction(
     Use get_frequent_reactions to discover valid reaction type values.
     """
     client = _get_client(ctx)
-    result = await _call(client.add_reaction(video_id, time, reaction_type))
+    result = await _call(client.add_reaction(_id(video_id, "video ID"), time, reaction_type))
     if result.get("message"):
         raise ToolError(f"Failed to add reaction: {result['message']}")
     return json.dumps(result, indent=2)
@@ -733,7 +751,7 @@ async def delete_reaction(
 ) -> str:
     """Delete an emoji reaction from a Loom video."""
     client = _get_client(ctx)
-    result = await _call(client.delete_reaction(reaction_id))
+    result = await _call(client.delete_reaction(_id(reaction_id, "reaction ID")))
     return f"Reaction deleted: {result}"
 
 
@@ -745,7 +763,7 @@ async def toggle_following(
 ) -> str:
     """Follow or unfollow a Loom video to get notifications."""
     client = _get_client(ctx)
-    result = await _call(client.toggle_following(video_id, follow))
+    result = await _call(client.toggle_following(_id(video_id, "video ID"), follow))
     return json.dumps(result, indent=2)
 
 
@@ -759,7 +777,7 @@ async def delete_video(
     To temporarily remove a video, use archive_videos instead. To recover a recently deleted video, use recover_video.
     """
     client = _get_client(ctx)
-    result = await _call(client.delete_video(video_id))
+    result = await _call(client.delete_video(_id(video_id, "video ID")))
     return f"Video deleted: {result}"
 
 
@@ -771,7 +789,7 @@ async def archive_videos(
 ) -> str:
     """Archive or unarchive Loom videos. Archived videos are hidden but not deleted."""
     client = _get_client(ctx)
-    result = await _call(client.archive_videos(video_ids, archive))
+    result = await _call(client.archive_videos(_ids(video_ids, "video ID"), archive))
     return json.dumps(result, indent=2)
 
 
@@ -782,7 +800,7 @@ async def duplicate_video(
 ) -> str:
     """Duplicate a Loom video. Creates a new copy each time."""
     client = _get_client(ctx)
-    result = await _call(client.duplicate_video(video_id))
+    result = await _call(client.duplicate_video(_id(video_id, "video ID")))
     return json.dumps(result, indent=2)
 
 
@@ -794,7 +812,7 @@ async def add_to_watch_later(
 ) -> str:
     """Add a Loom video to your Watch Later list."""
     client = _get_client(ctx)
-    result = await _call(client.add_to_watch_later(video_id, minutes_from_utc))
+    result = await _call(client.add_to_watch_later(_id(video_id, "video ID"), minutes_from_utc))
     return json.dumps(result, indent=2)
 
 
@@ -805,7 +823,7 @@ async def remove_from_watch_later(
 ) -> str:
     """Remove a Loom video from your Watch Later list."""
     client = _get_client(ctx)
-    result = await _call(client.remove_from_watch_later(video_id))
+    result = await _call(client.remove_from_watch_later(_id(video_id, "video ID")))
     return json.dumps(result, indent=2)
 
 
@@ -828,7 +846,7 @@ async def rename_folder(
 ) -> str:
     """Rename a Loom folder."""
     client = _get_client(ctx)
-    result = await _call(client.rename_folder(folder_id, name))
+    result = await _call(client.rename_folder(_id(folder_id, "folder ID"), name))
     return json.dumps(result, indent=2)
 
 
@@ -839,7 +857,7 @@ async def delete_folders(
 ) -> str:
     """Delete one or more Loom folders. This cannot be undone."""
     client = _get_client(ctx)
-    result = await _call(client.delete_folders(folder_ids))
+    result = await _call(client.delete_folders(_ids(folder_ids, "folder ID")))
     return json.dumps(result, indent=2)
 
 
@@ -851,7 +869,7 @@ async def move_videos(
 ) -> str:
     """Move one or more Loom videos to a different folder."""
     client = _get_client(ctx)
-    result = await _call(client.bulk_move_videos(video_ids, folder_id))
+    result = await _call(client.bulk_move_videos(_ids(video_ids, "video ID"), _id(folder_id, "folder ID")))
     return json.dumps(result, indent=2)
 
 
@@ -863,7 +881,7 @@ async def move_folders(
 ) -> str:
     """Move one or more Loom folders into a different parent folder."""
     client = _get_client(ctx)
-    result = await _call(client.bulk_move_folders(folder_ids, destination_folder_id))
+    result = await _call(client.bulk_move_folders(_ids(folder_ids, "folder ID"), _id(destination_folder_id, "folder ID")))
     return json.dumps(result, indent=2)
 
 
@@ -874,7 +892,7 @@ async def recover_video(
 ) -> str:
     """Recover a deleted Loom video from the trash."""
     client = _get_client(ctx)
-    result = await _call(client.recover_video(video_id))
+    result = await _call(client.recover_video(_id(video_id, "video ID")))
     return json.dumps(result, indent=2)
 
 
@@ -886,7 +904,7 @@ async def pin_video(
 ) -> str:
     """Pin or unpin a Loom video in your library."""
     client = _get_client(ctx)
-    await _call(client.update_video_pin_status(video_id, pinned))
+    await _call(client.update_video_pin_status(_id(video_id, "video ID"), pinned))
     action = "Pinned" if pinned else "Unpinned"
     return f"{action} video {video_id}"
 
@@ -900,7 +918,7 @@ async def add_comment_reaction(
 ) -> str:
     """Add an emoji reaction to a comment on a Loom video."""
     client = _get_client(ctx)
-    result = await _call(client.add_comment_reaction(comment_id, reaction, comment_type))
+    result = await _call(client.add_comment_reaction(_id(comment_id, "comment ID"), reaction, comment_type))
     return json.dumps(result, indent=2)
 
 
@@ -925,7 +943,7 @@ async def share_videos_to_spaces(
 ) -> str:
     """Share one or more Loom videos to one or more spaces."""
     client = _get_client(ctx)
-    result = await _call(client.batch_share_videos_to_spaces(video_ids, space_ids))
+    result = await _call(client.batch_share_videos_to_spaces(_ids(video_ids, "video ID"), _ids(space_ids, "space ID")))
     return json.dumps(result, indent=2)
 
 

@@ -1,0 +1,11 @@
+{
+  "name": "Loom",
+  "description": "Access Loom videos, transcripts, summaries, and comments via Loom's internal GraphQL API.",
+  "mcpServers": {
+    "loom": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--directory", ".", "fastmcp", "run", "main.py:mcp"]
+    }
+  }
+}
