@@ -1,5 +1,5 @@
 [project]
-name = "mcp-server"
+name = "loom-mcp"
 version = "0.1.0"
 description = "MCP server for Loom's internal GraphQL API"
 requires-python = ">=3.14"
@@ -7,6 +7,9 @@ dependencies = [
     "fastmcp>=3.0.0b2",
     "httpx>=0.28.1",
 ]
+
+[project.scripts]
+loom-mcp = "main:main"
 
 [tool.ruff.lint]
 select = ["T20"]
