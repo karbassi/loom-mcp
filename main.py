@@ -1,12 +1,12 @@
 import json
 import os
 import re
-from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 
 from fastmcp import FastMCP, Context
 from fastmcp.exceptions import ToolError
+from fastmcp.server.lifespan import lifespan
 from pydantic import Field
 
 from loom_client import LoomClient, LoomAPIError
@@ -22,7 +22,7 @@ if _env_path.exists():
             os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
 
 
-@asynccontextmanager
+@lifespan
 async def app_lifespan(server):
     cookie = os.environ.get("LOOM_COOKIE")
     if cookie:
@@ -43,6 +43,7 @@ mcp = FastMCP(
     "Loom",
     instructions="Access Loom videos, transcripts, summaries, and comments.",
     lifespan=app_lifespan,
+    version="0.1.0",
 )
 
 
@@ -78,6 +79,8 @@ def _ids(values: list[str], label: str = "ID") -> list[str]:
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def list_videos(
@@ -106,6 +109,8 @@ async def list_videos(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def search_videos(
@@ -125,6 +130,8 @@ async def search_videos(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_video(
@@ -144,6 +151,8 @@ async def get_video(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_transcript(
@@ -163,6 +172,8 @@ async def get_transcript(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_captions(
@@ -181,6 +192,8 @@ async def get_captions(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_summary(
@@ -201,6 +214,8 @@ async def get_summary(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_chapters(
@@ -219,6 +234,8 @@ async def get_chapters(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_comments(
@@ -240,6 +257,8 @@ async def get_comments(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_download_url(
@@ -255,6 +274,8 @@ async def get_download_url(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_tasks(
@@ -276,6 +297,8 @@ async def get_tasks(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_reactions(
@@ -299,6 +322,8 @@ async def get_reactions(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_meeting_notes(
@@ -314,6 +339,8 @@ async def get_meeting_notes(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def list_folders(
@@ -342,6 +369,8 @@ async def list_folders(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def list_spaces(ctx: Context) -> str:
@@ -366,6 +395,8 @@ async def list_spaces(ctx: Context) -> str:
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_backlinks(
@@ -387,6 +418,8 @@ async def get_backlinks(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_key_takeaways(
@@ -405,6 +438,8 @@ async def get_key_takeaways(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_tags(
@@ -420,6 +455,8 @@ async def get_tags(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_description(
@@ -438,6 +475,8 @@ async def get_description(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_confluence_pages(
@@ -454,6 +493,8 @@ async def get_confluence_pages(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def search_folders(
@@ -470,6 +511,8 @@ async def search_folders(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_last_watch_time(
@@ -485,6 +528,8 @@ async def get_last_watch_time(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_watch_later_count(ctx: Context) -> str:
@@ -495,6 +540,8 @@ async def get_watch_later_count(ctx: Context) -> str:
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_total_videos_count(
@@ -508,6 +555,8 @@ async def get_total_videos_count(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_frequent_reactions(ctx: Context) -> str:
@@ -523,6 +572,8 @@ async def get_frequent_reactions(ctx: Context) -> str:
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_comment_reactions(
@@ -546,6 +597,8 @@ async def get_comment_reactions(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_video_details(
@@ -617,6 +670,8 @@ async def get_video_details(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_user(
@@ -632,6 +687,8 @@ async def get_user(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def search_workspace_tags(
@@ -647,6 +704,8 @@ async def search_workspace_tags(
 
 
 @mcp.tool(
+    tags={"read"},
+    timeout=30.0,
     annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True}
 )
 async def get_folder(
@@ -667,6 +726,8 @@ async def get_folder(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def update_video_name(
@@ -681,6 +742,8 @@ async def update_video_name(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def update_video_description(
@@ -697,6 +760,8 @@ async def update_video_description(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def update_video_settings(
@@ -716,6 +781,8 @@ async def update_video_settings(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -742,6 +809,8 @@ async def create_comment(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def edit_comment(
@@ -761,6 +830,8 @@ async def edit_comment(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def delete_comment(
@@ -774,6 +845,8 @@ async def delete_comment(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -798,6 +871,8 @@ async def create_task(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def update_task(
@@ -812,6 +887,8 @@ async def update_task(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def delete_task(
@@ -825,6 +902,8 @@ async def delete_task(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -842,6 +921,8 @@ async def approve_task(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -860,6 +941,8 @@ async def respond_to_task(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -890,6 +973,8 @@ async def add_reaction(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def delete_reaction(
@@ -903,6 +988,8 @@ async def delete_reaction(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -921,6 +1008,8 @@ async def toggle_following(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def delete_video(
@@ -937,6 +1026,8 @@ async def delete_video(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def archive_videos(
@@ -951,6 +1042,8 @@ async def archive_videos(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -968,6 +1061,8 @@ async def duplicate_video(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -990,6 +1085,8 @@ async def add_to_watch_later(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def remove_from_watch_later(
@@ -1003,6 +1100,8 @@ async def remove_from_watch_later(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -1020,6 +1119,8 @@ async def create_folder(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def rename_folder(
@@ -1034,6 +1135,8 @@ async def rename_folder(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def delete_folders(
@@ -1047,6 +1150,8 @@ async def delete_folders(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def move_videos(
@@ -1065,6 +1170,8 @@ async def move_videos(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={"readOnlyHint": False, "destructiveHint": True, "idempotentHint": True}
 )
 async def move_folders(
@@ -1083,6 +1190,8 @@ async def move_folders(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -1100,6 +1209,8 @@ async def recover_video(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -1119,6 +1230,8 @@ async def pin_video(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -1142,6 +1255,8 @@ async def add_comment_reaction(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -1161,6 +1276,8 @@ async def toggle_following_tag(
 
 
 @mcp.tool(
+    tags={"write"},
+    timeout=30.0,
     annotations={
         "readOnlyHint": False,
         "destructiveHint": False,
@@ -1182,5 +1299,9 @@ async def share_videos_to_spaces(
     return json.dumps(result, indent=2)
 
 
-if __name__ == "__main__":
+def main():
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()

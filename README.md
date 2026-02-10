@@ -20,20 +20,23 @@
 ### 2. Install and run
 
 ```sh
+git clone git@github.com:karbassi/loom-mcp.git
+cd loom-mcp
 uv sync
 uv run main.py
 ```
 
 ### 3. MCP client configuration
 
-**With `LOOM_COOKIE` (no auth file needed):**
+**Via uvx (no clone needed):**
 
 ```json
 {
   "mcpServers": {
     "loom": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "--python=3.14", "loom-mcp"],
       "env": {
         "LOOM_COOKIE": "connect.sid=s%3A..."
       }
@@ -42,16 +45,17 @@ uv run main.py
 }
 ```
 
-**With auth file:**
+**Via local clone:**
 
 ```json
 {
   "mcpServers": {
     "loom": {
+      "type": "stdio",
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
+      "args": ["run", "--directory", "/path/to/loom-mcp", "loom-mcp"],
       "env": {
-        "LOOM_AUTH_FILE": "/path/to/auth.json"
+        "LOOM_COOKIE": "connect.sid=s%3A..."
       }
     }
   }
@@ -59,50 +63,6 @@ uv run main.py
 ```
 
 Auth resolution order: `LOOM_COOKIE` → `LOOM_AUTH_FILE` → `../auth.json`
-
-### Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "loom": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
-      "env": {
-        "LOOM_COOKIE": "connect.sid=s%3A..."
-      }
-    }
-  }
-}
-```
-
-### Claude Code
-
-```sh
-claude mcp add loom -- uv run --directory /path/to/mcp-server main.py
-```
-
-Then set the env var in your shell or `.env` file.
-
-### Cursor / VS Code
-
-Add to `.cursor/mcp.json` or `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "loom": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/mcp-server", "main.py"],
-      "env": {
-        "LOOM_COOKIE": "connect.sid=s%3A..."
-      }
-    }
-  }
-}
-```
 
 ## Tools
 

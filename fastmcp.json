@@ -4,8 +4,8 @@
   "mcpServers": {
     "loom": {
       "type": "stdio",
-      "command": "uv",
-      "args": ["run", "--directory", ".", "fastmcp", "run", "main.py:mcp"]
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "--python=3.14", "loom-mcp"]
     }
   }
 }
