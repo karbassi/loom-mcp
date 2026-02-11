@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-[MCP](https://modelcontextprotocol.io) server exposing 58 tools for Loom's internal GraphQL API. Works with Claude, Cursor, or any MCP-compatible client.
+[MCP](https://modelcontextprotocol.io) server exposing 59 tools for Loom's internal GraphQL API. Works with Claude, Cursor, or any MCP-compatible client.
 
 ## Features
 
@@ -148,7 +148,7 @@ Or reference it from any MCP client:
 
 ## Tools
 
-### Read (29 tools)
+### Read (30 tools)
 
 | Tool | Description |
 |---|---|
@@ -172,6 +172,7 @@ Or reference it from any MCP client:
 | `get_video_details` | All-in-one: metadata + transcript + chapters + summary + comments + tasks |
 | `list_folders` | List your folders |
 | `list_spaces` | List your workspaces |
+| `get_space` | Space details (name, privacy, primary) |
 | `search_folders` | Search folders by name |
 | `get_folder` | Folder details |
 | `get_last_watch_time` | Last timestamp where you stopped watching |

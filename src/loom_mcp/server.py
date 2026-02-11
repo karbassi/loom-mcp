@@ -490,6 +490,27 @@ async def list_spaces(ctx: Context) -> str:
         "idempotentHint": True,
     },
 )
+async def get_space(
+    ctx: Context,
+    space_id: Annotated[str, "The Loom space ID"],
+) -> str:
+    """Get details of a Loom space including name, privacy level, and whether it's the primary space."""
+    client = _get_client(ctx)
+    space = await _call(client.get_space(_id(space_id, "space ID")))
+    if not space:
+        raise ToolError(f"Space not found: {space_id}")
+    return json.dumps(space, indent=2)
+
+
+@mcp.tool(
+    tags={"read"},
+    timeout=30.0,
+    annotations={
+        "readOnlyHint": True,
+        "destructiveHint": False,
+        "idempotentHint": True,
+    },
+)
 async def get_backlinks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],

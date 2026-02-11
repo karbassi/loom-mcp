@@ -459,23 +459,6 @@ class LoomClient:
         )
         return (data.get("getVideo") or {}).get("description")
 
-    async def fetch_videos_by_id(self, video_ids: list[str]) -> list[dict]:
-        data = await self.graphql(
-            "FetchVideosById",
-            """query FetchVideosById($videoIds: [ID!]!) {
-              fetchVideosById(videoIds: $videoIds) {
-                ... on FetchVideosByIdPayload {
-                  videos { id name createdAt playable_duration }
-                }
-              }
-            }""",
-            {"videoIds": video_ids},
-        )
-        result = data.get("fetchVideosById")
-        if not result:
-            return []
-        return result.get("videos") or []
-
     async def get_space(self, space_id: str) -> dict | None:
         data = await self.graphql(
             "GetSpace",

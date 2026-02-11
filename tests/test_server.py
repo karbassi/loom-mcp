@@ -47,6 +47,7 @@ READ_TOOLS = {
     "get_user",
     "search_workspace_tags",
     "get_folder",
+    "get_space",
 }
 
 DESTRUCTIVE_TOOLS = {
@@ -109,7 +110,7 @@ async def test_all_tools_registered(client):
 @pytest.mark.anyio
 async def test_tool_count(client):
     tools = await client.list_tools()
-    assert len(tools) == 58
+    assert len(tools) == 59
 
 
 @pytest.mark.anyio
