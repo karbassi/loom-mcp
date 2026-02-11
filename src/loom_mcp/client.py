@@ -130,17 +130,6 @@ class LoomClient:
             "hasNextPage": results["pageInfo"]["hasNextPage"],
         }
 
-    async def get_all_videos(self) -> list[dict]:
-        all_videos = []
-        cursor = None
-        while True:
-            result = await self.list_videos(limit=50, cursor=cursor)
-            all_videos.extend(result["videos"])
-            if not result["hasNextPage"]:
-                break
-            cursor = result["endCursor"]
-        return all_videos
-
     async def get_video(self, video_id: str) -> dict:
         data = await self.graphql(
             "fetchVideoData",
