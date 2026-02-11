@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2026-02-10
+
+### Fixed
+
+- 401 error message now says to refresh the browser cookie instead of referencing removed `login.js`
+- `.env` and `auth.json` path resolution no longer breaks when installed via `uvx` (gracefully skipped when no local `pyproject.toml` is found)
+- Clear error message when neither `LOOM_COOKIE` nor `LOOM_AUTH_FILE` is set
+
+### Changed
+
+- `get_video_details` now fetches transcript, chapters, summary, comments, and tasks concurrently via `asyncio.gather` instead of sequentially
+- Rewrite README with per-client install instructions, badges, and improved auth docs
+- Add MIT license, CONTRIBUTING.md
+
 ## [1.0.0] - 2026-02-10
 
 ### Changed
