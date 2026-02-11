@@ -14,24 +14,28 @@ from loom_mcp.client import LoomClient, LoomAPIError
 _ID_RE = re.compile(r"\A[a-zA-Z0-9_.\-]{1,200}\Z")
 
 
-def _find_project_root() -> Path:
+def _find_project_root() -> Path | None:
+    """Walk up from this file to find the directory containing pyproject.toml."""
     d = Path(__file__).resolve().parent
     while d != d.parent:
         if (d / "pyproject.toml").exists():
             return d
         d = d.parent
-    return Path.cwd()
+    return None
 
 
-_REPO_ROOT = _find_project_root().parent  # loom-api/
+# In a local dev checkout (loom-api/mcp-server/), the project root's parent
+# contains .env and auth.json.  When installed via uvx, _find_project_root()
+# returns None and these paths are skipped gracefully.
+_PROJECT_ROOT = _find_project_root()
 
-# Load .env from parent repo (no dependencies)
-_env_path = _REPO_ROOT / ".env"
-if _env_path.exists():
-    for _line in _env_path.read_text().splitlines():
-        if _line.strip() and not _line.startswith("#") and "=" in _line:
-            _k, _, _v = _line.partition("=")
-            os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
+if _PROJECT_ROOT is not None:
+    _env_path = _PROJECT_ROOT.parent / ".env"
+    if _env_path.exists():
+        for _line in _env_path.read_text().splitlines():
+            if _line.strip() and not _line.startswith("#") and "=" in _line:
+                _k, _, _v = _line.partition("=")
+                os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
 
 
 @lifespan
@@ -40,10 +44,14 @@ async def app_lifespan(server):
     if cookie:
         client = LoomClient(cookies=cookie)
     else:
-        auth_file = os.environ.get(
-            "LOOM_AUTH_FILE",
-            str(_REPO_ROOT / "auth.json"),
-        )
+        auth_file = os.environ.get("LOOM_AUTH_FILE")
+        if not auth_file and _PROJECT_ROOT is not None:
+            auth_file = str(_PROJECT_ROOT.parent / "auth.json")
+        if not auth_file:
+            raise ValueError(
+                "Set LOOM_COOKIE or LOOM_AUTH_FILE. "
+                "See https://github.com/karbassi/loom-mcp#authentication"
+            )
         client = LoomClient(auth_file=auth_file)
     try:
         yield {"loom": client}
