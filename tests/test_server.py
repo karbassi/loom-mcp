@@ -289,11 +289,15 @@ async def test_get_transcript_empty(client):
 
 @pytest.mark.anyio
 async def test_search_videos_happy_path(client):
-    mock_results = [{"id": VALID_ID, "name": "Demo"}]
+    mock_result = {
+        "videos": [{"id": VALID_ID, "name": "Demo"}],
+        "endCursor": None,
+        "hasNextPage": False,
+    }
     with patch(
-        "loom_mcp.server.LoomClient.search_videos",
+        "loom_mcp.server.LoomClient.search_videos_paginated",
         new_callable=AsyncMock,
-        return_value=mock_results,
+        return_value=mock_result,
     ):
         result = await client.call_tool("search_videos", {"query": "demo"})
     assert "Demo" in result.content[0].text
@@ -301,10 +305,15 @@ async def test_search_videos_happy_path(client):
 
 @pytest.mark.anyio
 async def test_search_videos_empty(client):
+    mock_result = {
+        "videos": [],
+        "endCursor": None,
+        "hasNextPage": False,
+    }
     with patch(
-        "loom_mcp.server.LoomClient.search_videos",
+        "loom_mcp.server.LoomClient.search_videos_paginated",
         new_callable=AsyncMock,
-        return_value=[],
+        return_value=mock_result,
     ):
         result = await client.call_tool("search_videos", {"query": "nonexistent"})
     assert "No videos matching" in result.content[0].text

@@ -144,18 +144,28 @@ async def list_videos(
 )
 async def search_videos(
     ctx: Context,
-    query: Annotated[str, "Search query — supports natural language / semantic search"],
+    query: Annotated[str, "Search query"],
+    limit: Annotated[
+        int, Field(description="Max results to return (default 50)", ge=1, le=200)
+    ] = 50,
 ) -> str:
-    """Search Loom videos using AI-powered semantic search.
-
-    Understands natural language queries, not just keywords. Returns matching video IDs and names.
-    """
+    """Search Loom videos by keyword. Returns matching video IDs and names."""
     client = _get_client(ctx)
-    matches = await _call(client.search_videos(query))
-    if not matches:
+    videos = []
+    cursor = None
+    while len(videos) < limit:
+        batch_size = min(50, limit - len(videos))
+        result = await _call(
+            client.search_videos_paginated(query, limit=batch_size, cursor=cursor)
+        )
+        videos.extend(result["videos"])
+        if not result["hasNextPage"]:
+            break
+        cursor = result["endCursor"]
+    if not videos:
         return f"No videos matching '{query}'"
-    lines = [f"{v['id']}  {v['name']}" for v in matches]
-    return f"Found {len(matches)} matching videos:\n\n" + "\n".join(lines)
+    lines = [f"{v['id']}  {v['name']}" for v in videos]
+    return f"Found {len(videos)} matching videos:\n\n" + "\n".join(lines)
 
 
 @mcp.tool(
