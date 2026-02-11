@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-02-10
+
+### Added
+
+- `get_space` tool — get details of a space by ID (parallels `get_folder`)
+- `limit` parameter on `search_videos` (default 50, max 200)
+
+### Changed
+
+- `search_videos` now uses the paginated `SearchVideos` endpoint instead of the semantic `Search` endpoint — faster and no longer capped at 10 results
+- Remove unused `fetch_videos_by_id` and `get_all_videos` from client
+
 ## [1.0.1] - 2026-02-10
 
 ### Fixed
