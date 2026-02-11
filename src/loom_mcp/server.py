@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import re
@@ -738,11 +739,13 @@ async def get_video_details(
     video = await _call(client.get_video(video_id))
     if video.get("message"):
         raise ToolError(f"Cannot access video {video_id}: {video['message']}")
-    transcript = await _call(client.get_transcript_text(video_id))
-    chapters = await _call(client.get_chapters(video_id))
-    summary = await _call(client.get_summary(video_id))
-    comments = await _call(client.get_comments(video_id))
-    tasks = await _call(client.get_tasks(video_id))
+    transcript, chapters, summary, comments, tasks = await asyncio.gather(
+        _call(client.get_transcript_text(video_id)),
+        _call(client.get_chapters(video_id)),
+        _call(client.get_summary(video_id)),
+        _call(client.get_comments(video_id)),
+        _call(client.get_tasks(video_id)),
+    )
 
     parts = [f"# {video.get('name', 'Unknown')}\n"]
 
