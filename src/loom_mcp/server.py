@@ -156,7 +156,7 @@ async def search_videos(
     while len(videos) < limit:
         batch_size = min(50, limit - len(videos))
         result = await _call(
-            client.search_videos_paginated(query, limit=batch_size, cursor=cursor)
+            client.search_videos(query, limit=batch_size, cursor=cursor)
         )
         videos.extend(result["videos"])
         if not result["hasNextPage"]:

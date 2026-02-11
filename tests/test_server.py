@@ -295,7 +295,7 @@ async def test_search_videos_happy_path(client):
         "hasNextPage": False,
     }
     with patch(
-        "loom_mcp.server.LoomClient.search_videos_paginated",
+        "loom_mcp.server.LoomClient.search_videos",
         new_callable=AsyncMock,
         return_value=mock_result,
     ):
@@ -311,7 +311,7 @@ async def test_search_videos_empty(client):
         "hasNextPage": False,
     }
     with patch(
-        "loom_mcp.server.LoomClient.search_videos_paginated",
+        "loom_mcp.server.LoomClient.search_videos",
         new_callable=AsyncMock,
         return_value=mock_result,
     ):

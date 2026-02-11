@@ -105,22 +105,7 @@ class LoomClient:
             "hasNextPage": videos["pageInfo"]["hasNextPage"],
         }
 
-    async def search_videos(self, query: str) -> list[dict]:
-        """Semantic search using Loom's AI-powered search."""
-        data = await self.graphql(
-            "Search",
-            """query Search($searchQuery: String!) {
-              search(searchQuery: $searchQuery) {
-                ... on VideoFromSearch {
-                  id name createdAt folder
-                }
-              }
-            }""",
-            {"searchQuery": query},
-        )
-        return data.get("search") or []
-
-    async def search_videos_paginated(
+    async def search_videos(
         self, query: str, limit: int = 50, cursor: str | None = None
     ) -> dict:
         """Text search with pagination."""
