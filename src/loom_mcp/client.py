@@ -60,7 +60,7 @@ class LoomClient:
                 )
             if r.status_code == 401:
                 raise LoomAPIError(
-                    "Loom session expired. Run login.js to refresh your session."
+                    "Loom session expired. Get a fresh connect.sid cookie from your browser."
                 )
             if r.status_code == 403:
                 raise LoomAPIError(
