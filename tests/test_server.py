@@ -14,8 +14,8 @@ os.environ.setdefault("LOOM_COOKIE", "test=dummy")
 import pytest
 from fastmcp.client import Client
 
-from loom_client import LoomAPIError
-from main import mcp, _id, _ids
+from loom_mcp.client import LoomAPIError
+from loom_mcp.server import mcp, _id, _ids
 
 READ_TOOLS = {
     "list_videos",
@@ -254,7 +254,9 @@ async def test_get_video_happy_path(client):
         "views": {"total": 10},
     }
     with patch(
-        "main.LoomClient.get_video", new_callable=AsyncMock, return_value=mock_video
+        "loom_mcp.server.LoomClient.get_video",
+        new_callable=AsyncMock,
+        return_value=mock_video,
     ):
         result = await client.call_tool("get_video", {"video_id": VALID_ID})
     text = result.content[0].text
@@ -266,7 +268,7 @@ async def test_get_video_happy_path(client):
 async def test_get_transcript_happy_path(client):
     mock_text = "00:00 [Alice] Hello world\n00:05 [Bob] Hi there"
     with patch(
-        "main.LoomClient.get_transcript_text",
+        "loom_mcp.server.LoomClient.get_transcript_text",
         new_callable=AsyncMock,
         return_value=mock_text,
     ):
@@ -277,7 +279,9 @@ async def test_get_transcript_happy_path(client):
 @pytest.mark.anyio
 async def test_get_transcript_empty(client):
     with patch(
-        "main.LoomClient.get_transcript_text", new_callable=AsyncMock, return_value=None
+        "loom_mcp.server.LoomClient.get_transcript_text",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         result = await client.call_tool("get_transcript", {"video_id": VALID_ID})
     assert "No transcript" in result.content[0].text
@@ -287,7 +291,7 @@ async def test_get_transcript_empty(client):
 async def test_search_videos_happy_path(client):
     mock_results = [{"id": VALID_ID, "name": "Demo"}]
     with patch(
-        "main.LoomClient.search_videos",
+        "loom_mcp.server.LoomClient.search_videos",
         new_callable=AsyncMock,
         return_value=mock_results,
     ):
@@ -298,7 +302,9 @@ async def test_search_videos_happy_path(client):
 @pytest.mark.anyio
 async def test_search_videos_empty(client):
     with patch(
-        "main.LoomClient.search_videos", new_callable=AsyncMock, return_value=[]
+        "loom_mcp.server.LoomClient.search_videos",
+        new_callable=AsyncMock,
+        return_value=[],
     ):
         result = await client.call_tool("search_videos", {"query": "nonexistent"})
     assert "No videos matching" in result.content[0].text
@@ -315,7 +321,7 @@ async def test_get_comments_happy_path(client):
         },
     ]
     with patch(
-        "main.LoomClient.get_comments",
+        "loom_mcp.server.LoomClient.get_comments",
         new_callable=AsyncMock,
         return_value=mock_comments,
     ):
@@ -326,7 +332,11 @@ async def test_get_comments_happy_path(client):
 
 @pytest.mark.anyio
 async def test_get_comments_empty(client):
-    with patch("main.LoomClient.get_comments", new_callable=AsyncMock, return_value=[]):
+    with patch(
+        "loom_mcp.server.LoomClient.get_comments",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
         result = await client.call_tool("get_comments", {"video_id": VALID_ID})
     assert "No comments" in result.content[0].text
 
@@ -334,7 +344,7 @@ async def test_get_comments_empty(client):
 @pytest.mark.anyio
 async def test_update_video_name_happy_path(client):
     with patch(
-        "main.LoomClient.update_video_name",
+        "loom_mcp.server.LoomClient.update_video_name",
         new_callable=AsyncMock,
         return_value={"name": "New Name"},
     ):
@@ -347,7 +357,9 @@ async def test_update_video_name_happy_path(client):
 @pytest.mark.anyio
 async def test_delete_video_happy_path(client):
     with patch(
-        "main.LoomClient.delete_video", new_callable=AsyncMock, return_value=True
+        "loom_mcp.server.LoomClient.delete_video",
+        new_callable=AsyncMock,
+        return_value=True,
     ):
         result = await client.call_tool("delete_video", {"video_id": VALID_ID})
     assert "Video deleted" in result.content[0].text
@@ -361,7 +373,7 @@ async def test_delete_video_happy_path(client):
 @pytest.mark.anyio
 async def test_get_video_api_error(client):
     with patch(
-        "main.LoomClient.get_video",
+        "loom_mcp.server.LoomClient.get_video",
         new_callable=AsyncMock,
         side_effect=LoomAPIError("Session expired"),
     ):
@@ -375,7 +387,7 @@ async def test_get_video_api_error(client):
 @pytest.mark.anyio
 async def test_get_video_private(client):
     with patch(
-        "main.LoomClient.get_video",
+        "loom_mcp.server.LoomClient.get_video",
         new_callable=AsyncMock,
         return_value={"message": "Private video"},
     ):
@@ -398,7 +410,7 @@ async def test_get_video_invalid_id(client):
 @pytest.mark.anyio
 async def test_delete_comment_api_error(client):
     with patch(
-        "main.LoomClient.delete_comment",
+        "loom_mcp.server.LoomClient.delete_comment",
         new_callable=AsyncMock,
         side_effect=LoomAPIError("Not found"),
     ):

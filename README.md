@@ -6,16 +6,9 @@
 
 ### 1. Auth (pick one)
 
-**Option A: Cookie from browser (quickest)**
-
 1. Open Loom in your browser, open DevTools → Application → Cookies
 2. Copy the `connect.sid` value
 3. Set `LOOM_COOKIE` in your MCP config (see below)
-
-**Option B: Auth file**
-
-1. Run `node login.js` from the [parent repo](../) to capture a browser session
-2. The server looks for `../auth.json` by default. Set `LOOM_AUTH_FILE` to override.
 
 ### 2. Install and run
 
@@ -23,7 +16,7 @@
 git clone git@github.com:karbassi/loom-mcp.git
 cd loom-mcp
 uv sync
-uv run main.py
+uv run loom-mcp
 ```
 
 ### 3. MCP client configuration
@@ -36,7 +29,7 @@ uv run main.py
     "loom": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "--python=3.14", "loom-mcp"],
+      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "loom-mcp"],
       "env": {
         "LOOM_COOKIE": "connect.sid=s%3A..."
       }
@@ -62,7 +55,7 @@ uv run main.py
 }
 ```
 
-Auth resolution order: `LOOM_COOKIE` → `LOOM_AUTH_FILE` → `../auth.json`
+Auth: set `LOOM_COOKIE` in your MCP client config or as an environment variable.
 
 ## Tools
 
@@ -136,11 +129,9 @@ Auth resolution order: `LOOM_COOKIE` → `LOOM_AUTH_FILE` → `../auth.json`
 
 ## Auth errors
 
-If you get auth errors, your session has expired (~30 days). Either:
-- Run `node refresh.js` from the parent repo (headless, extends the session)
-- Run `node login.js` from the parent repo (opens browser for fresh login)
+If you get auth errors, your session cookie has expired (~30 days). Grab a fresh `connect.sid` from your browser.
 
 ## Requirements
 
-- Python 3.14+
+- Python 3.11+
 - [uv](https://docs.astral.sh/uv/) package manager
