@@ -5,7 +5,7 @@
     "loom": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "--python=3.14", "loom-mcp"]
+      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "loom-mcp"]
     }
   }
 }
