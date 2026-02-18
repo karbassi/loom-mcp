@@ -1,6 +1,6 @@
 [project]
 name = "loom-mcp"
-version = "1.0.2"
+version = "1.1.0"
 description = "MCP server for Loom's internal GraphQL API"
 license = "MIT"
 requires-python = ">=3.11"

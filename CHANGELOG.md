@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-02-17
+
+### Added
+
+- Optional `save_dir` parameter on all per-video read tools (`get_video`, `get_transcript`, `get_captions`, `get_summary`, `get_chapters`, `get_description`, `get_key_takeaways`, `get_comments`, `get_tasks`, `get_reactions`, `get_tags`, `get_backlinks`, `get_video_details`)
+- When `save_dir` is provided, tool output is saved to `{save_dir}/{video_id}/` with appropriate filenames (e.g. `transcript.txt`, `captions.vtt`, `metadata.json`)
+- `get_video_details` saves each piece individually plus a combined `details.md`
+- Saved file path is returned alongside the content
+
 ## [1.0.2] - 2026-02-10
 
 ### Added

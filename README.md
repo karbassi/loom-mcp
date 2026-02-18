@@ -9,6 +9,7 @@
 
 - List, search, and get detailed metadata for Loom videos
 - Read transcripts, captions, AI summaries, chapters, and key takeaways
+- Save any fetched content to disk on demand via `save_dir` parameter
 - Manage comments, tasks, reactions, and tags
 - Organize with folders, spaces, and watch lists
 - Update video settings, share to spaces, and more
@@ -150,38 +151,40 @@ Or reference it from any MCP client:
 
 ### Read (30 tools)
 
-| Tool | Description |
-|---|---|
-| `list_videos` | List your videos, sorted by most recent |
-| `search_videos` | AI-powered semantic search |
-| `get_video` | Video metadata (name, duration, owner, views) |
-| `get_transcript` | Full transcript with timestamps and speakers |
-| `get_captions` | WebVTT captions with start+end timestamps per cue |
-| `get_summary` | AI-generated summary |
-| `get_chapters` | AI-generated chapters |
-| `get_description` | AI-generated detailed description with timestamped sections |
-| `get_key_takeaways` | AI-generated key takeaways |
-| `get_comments` | Comments and replies |
-| `get_tasks` | AI-generated action items |
-| `get_reactions` | Emoji reactions |
-| `get_tags` | Video tags |
-| `get_backlinks` | External references (where the video is shared/embedded) |
-| `get_meeting_notes` | Confluence meeting notes URL |
-| `get_confluence_pages` | Linked Confluence pages |
-| `get_download_url` | Signed MP4 download URL |
-| `get_video_details` | All-in-one: metadata + transcript + chapters + summary + comments + tasks |
-| `list_folders` | List your folders |
-| `list_spaces` | List your workspaces |
-| `get_space` | Space details (name, privacy, primary) |
-| `search_folders` | Search folders by name |
-| `get_folder` | Folder details |
-| `get_last_watch_time` | Last timestamp where you stopped watching |
-| `get_watch_later_count` | Number of videos in your Watch Later list |
-| `get_total_videos_count` | Total videos created by a user |
-| `get_frequent_reactions` | Your most-used emoji reaction types |
-| `get_comment_reactions` | Emoji reactions on a specific comment |
-| `get_user` | User profile by ID (name, email, company, avatar) |
-| `search_workspace_tags` | Search tags in your workspace |
+Tools marked with **Save** accept an optional `save_dir` parameter — see [Saving to disk](#saving-to-disk).
+
+| Tool | Description | Save |
+|---|---|:---:|
+| `list_videos` | List your videos, sorted by most recent | |
+| `search_videos` | AI-powered semantic search | |
+| `get_video` | Video metadata (name, duration, owner, views) | `metadata.json` |
+| `get_transcript` | Full transcript with timestamps and speakers | `transcript.txt` |
+| `get_captions` | WebVTT captions with start+end timestamps per cue | `captions.vtt` |
+| `get_summary` | AI-generated summary | `summary.txt` |
+| `get_chapters` | AI-generated chapters | `chapters.txt` |
+| `get_description` | AI-generated detailed description with timestamped sections | `description.txt` |
+| `get_key_takeaways` | AI-generated key takeaways | `takeaways.txt` |
+| `get_comments` | Comments and replies | `comments.txt` |
+| `get_tasks` | AI-generated action items | `tasks.txt` |
+| `get_reactions` | Emoji reactions | `reactions.txt` |
+| `get_tags` | Video tags | `tags.txt` |
+| `get_backlinks` | External references (where the video is shared/embedded) | `backlinks.txt` |
+| `get_meeting_notes` | Confluence meeting notes URL | |
+| `get_confluence_pages` | Linked Confluence pages | |
+| `get_download_url` | Signed MP4 download URL | |
+| `get_video_details` | All-in-one: metadata + transcript + chapters + summary + comments + tasks | `details.md` + all above |
+| `list_folders` | List your folders | |
+| `list_spaces` | List your workspaces | |
+| `get_space` | Space details (name, privacy, primary) | |
+| `search_folders` | Search folders by name | |
+| `get_folder` | Folder details | |
+| `get_last_watch_time` | Last timestamp where you stopped watching | |
+| `get_watch_later_count` | Number of videos in your Watch Later list | |
+| `get_total_videos_count` | Total videos created by a user | |
+| `get_frequent_reactions` | Your most-used emoji reaction types | |
+| `get_comment_reactions` | Emoji reactions on a specific comment | |
+| `get_user` | User profile by ID (name, email, company, avatar) | |
+| `search_workspace_tags` | Search tags in your workspace | |
 
 ### Write (29 tools)
 
@@ -219,6 +222,14 @@ Or reference it from any MCP client:
 | `move_videos` | Move videos to a different folder |
 | `move_folders` | Move folders into a different parent folder |
 | `share_videos_to_spaces` | Share videos to one or more spaces |
+
+## Saving to disk
+
+Most per-video read tools accept an optional `save_dir` parameter. When provided, the tool saves its output to `{save_dir}/{video_id}/` and returns the file path alongside the content. When omitted, nothing is saved.
+
+Just ask naturally — *"get the details from my last meeting and save them to the `ask` directory"* — and the LLM will pass `save_dir="ask"` to the tool.
+
+`get_video_details` saves each piece individually (`metadata.json`, `transcript.txt`, `summary.txt`, etc.) plus a combined `details.md`.
 
 ## Troubleshooting
 

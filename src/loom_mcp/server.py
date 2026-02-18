@@ -54,6 +54,7 @@ async def app_lifespan(server):
                 "See https://github.com/karbassi/loom-mcp#authentication"
             )
         client = LoomClient(auth_file=auth_file)
+
     try:
         yield {"loom": client}
     finally:
@@ -64,12 +65,28 @@ mcp = FastMCP(
     "Loom",
     instructions="Access Loom videos, transcripts, summaries, and comments.",
     lifespan=app_lifespan,
-    version="1.0.2",
+    version="1.1.0",
 )
 
 
 def _get_client(ctx: Context) -> LoomClient:
     return ctx.lifespan_context["loom"]
+
+
+def _save(save_dir: str | None, video_id: str, filename: str, content: str) -> Path | None:
+    if not save_dir or not content:
+        return None
+    video_dir = Path(save_dir).expanduser().resolve() / video_id
+    video_dir.mkdir(parents=True, exist_ok=True)
+    path = video_dir / filename
+    path.write_text(content, encoding="utf-8")
+    return path
+
+
+def _with_saved(text: str, path: Path | None) -> str:
+    if path:
+        return f"{text}\n\n[Saved to {path}]"
+    return text
 
 
 async def _call(coro):
@@ -180,6 +197,7 @@ async def search_videos(
 async def get_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID (32-char hex string)"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get metadata for a Loom video including name, duration, owner, views, and creation date.
 
@@ -187,10 +205,13 @@ async def get_video(
     use get_video_details instead.
     """
     client = _get_client(ctx)
-    video = await _call(client.get_video(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    video = await _call(client.get_video(vid))
     if video.get("message"):
-        raise ToolError(f"Cannot access video {video_id}: {video['message']}")
-    return json.dumps(video, indent=2)
+        raise ToolError(f"Cannot access video {vid}: {video['message']}")
+    text = json.dumps(video, indent=2)
+    path = _save(save_dir, vid, "metadata.json", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -205,6 +226,7 @@ async def get_video(
 async def get_transcript(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get the full transcript of a Loom video with timestamps and speaker names.
 
@@ -212,10 +234,12 @@ async def get_transcript(
     in WebVTT format, use get_captions instead.
     """
     client = _get_client(ctx)
-    text = await _call(client.get_transcript_text(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    text = await _call(client.get_transcript_text(vid))
     if not text:
         return "No transcript available for this video."
-    return text
+    path = _save(save_dir, vid, "transcript.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -230,16 +254,19 @@ async def get_transcript(
 async def get_captions(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get WebVTT captions of a Loom video with start and end timestamps per cue.
 
     Ideal for precise timing analysis. For plain text with speaker names, use get_transcript instead.
     """
     client = _get_client(ctx)
-    vtt = await _call(client.get_captions(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    vtt = await _call(client.get_captions(vid))
     if not vtt:
         return "No captions available for this video."
-    return vtt
+    path = _save(save_dir, vid, "captions.vtt", vtt)
+    return _with_saved(vtt, path)
 
 
 @mcp.tool(
@@ -254,6 +281,7 @@ async def get_captions(
 async def get_summary(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get the AI-generated summary of a Loom video (1-2 concise sentences).
 
@@ -262,10 +290,13 @@ async def get_summary(
     For chapter markers, use get_chapters.
     """
     client = _get_client(ctx)
-    summary = await _call(client.get_summary(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    summary = await _call(client.get_summary(vid))
     if not summary or not summary.get("autoDescription"):
         return "No AI summary available for this video."
-    return summary["autoDescription"]
+    text = summary["autoDescription"]
+    path = _save(save_dir, vid, "summary.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -280,16 +311,20 @@ async def get_summary(
 async def get_chapters(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get AI-generated chapter markers with timestamps for a Loom video.
 
     Useful for navigating long videos. For a narrative summary, use get_summary.
     """
     client = _get_client(ctx)
-    chapters = await _call(client.get_chapters(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    chapters = await _call(client.get_chapters(vid))
     if not chapters or not chapters.get("content"):
         return "No chapters available for this video."
-    return chapters["content"]
+    text = chapters["content"]
+    path = _save(save_dir, vid, "chapters.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -304,10 +339,12 @@ async def get_chapters(
 async def get_comments(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get comments on a Loom video, including threaded replies and timestamps."""
     client = _get_client(ctx)
-    comments = await _call(client.get_comments(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    comments = await _call(client.get_comments(vid))
     if not comments:
         return "No comments on this video."
     lines = []
@@ -316,7 +353,9 @@ async def get_comments(
         lines.append(f"[{c['user_name']}{ts}] {c['content']}")
         for r in c.get("children_comments") or []:
             lines.append(f"  └─ [{r['user_name']}] {r['content']}")
-    return "\n".join(lines)
+    text = "\n".join(lines)
+    path = _save(save_dir, vid, "comments.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -352,10 +391,12 @@ async def get_download_url(
 async def get_tasks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get AI-generated action items (tasks) from a Loom video, including assignee, status, and timestamp."""
     client = _get_client(ctx)
-    tasks = await _call(client.get_tasks(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    tasks = await _call(client.get_tasks(vid))
     if not tasks:
         return "No tasks/action items for this video."
     lines = []
@@ -364,7 +405,9 @@ async def get_tasks(
         ts = f" @{t['time_stamp']}s" if t.get("time_stamp") is not None else ""
         status = "resolved" if t.get("resolved_at") else "open"
         lines.append(f"[{status}] [{owner}{ts}] {t['content']}")
-    return "\n".join(lines)
+    text = "\n".join(lines)
+    path = _save(save_dir, vid, "tasks.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -379,10 +422,12 @@ async def get_tasks(
 async def get_reactions(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get emoji reactions on a Loom video, including who reacted and at what timestamp."""
     client = _get_client(ctx)
-    reactions = await _call(client.get_reactions(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    reactions = await _call(client.get_reactions(vid))
     if not reactions:
         return "No reactions on this video."
     lines = []
@@ -393,7 +438,9 @@ async def get_reactions(
         emoji = r.get("extended_reaction") or r.get("reaction", "")
         ts = f" @{r['time']}s" if r.get("time") is not None else ""
         lines.append(f"[{user}{ts}] {emoji}")
-    return "\n".join(lines)
+    text = "\n".join(lines)
+    path = _save(save_dir, vid, "reactions.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -514,10 +561,12 @@ async def get_space(
 async def get_backlinks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get external references (backlinks) to a Loom video — where it's been shared or embedded."""
     client = _get_client(ctx)
-    backlinks = await _call(client.get_backlinks(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    backlinks = await _call(client.get_backlinks(vid))
     if not backlinks:
         return "No backlinks for this video."
     lines = []
@@ -526,7 +575,9 @@ async def get_backlinks(
         title = b.get("title", "Untitled")
         link = b.get("sourceLink", "")
         lines.append(f"[{source}] {title} — {link}")
-    return "\n".join(lines)
+    text = "\n".join(lines)
+    path = _save(save_dir, vid, "backlinks.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -541,16 +592,20 @@ async def get_backlinks(
 async def get_key_takeaways(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get AI-generated key takeaways from a Loom video as a bullet list.
 
     For a narrative summary, use get_summary. For a detailed timestamped breakdown, use get_description.
     """
     client = _get_client(ctx)
-    takeaways = await _call(client.get_key_takeaways(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    takeaways = await _call(client.get_key_takeaways(vid))
     if not takeaways:
         return "No key takeaways available for this video."
-    return "\n".join(f"- {t}" for t in takeaways)
+    text = "\n".join(f"- {t}" for t in takeaways)
+    path = _save(save_dir, vid, "takeaways.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -565,13 +620,17 @@ async def get_key_takeaways(
 async def get_tags(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get tags on a Loom video."""
     client = _get_client(ctx)
-    tags = await _call(client.get_tags(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    tags = await _call(client.get_tags(vid))
     if not tags:
         return "No tags on this video."
-    return ", ".join(tags)
+    text = ", ".join(tags)
+    path = _save(save_dir, vid, "tags.txt", text)
+    return _with_saved(text, path)
 
 
 @mcp.tool(
@@ -586,16 +645,19 @@ async def get_tags(
 async def get_description(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get the AI-generated description of a Loom video with timestamped sections and bullet points.
 
     More detailed than get_summary. For a brief 1-2 sentence summary, use get_summary instead.
     """
     client = _get_client(ctx)
-    desc = await _call(client.get_description(_id(video_id, "video ID")))
+    vid = _id(video_id, "video ID")
+    desc = await _call(client.get_description(vid))
     if not desc:
         return "No description available for this video."
-    return desc
+    path = _save(save_dir, vid, "description.txt", desc)
+    return _with_saved(desc, path)
 
 
 @mcp.tool(
@@ -760,23 +822,27 @@ async def get_comment_reactions(
 async def get_video_details(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
+    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
 ) -> str:
     """Get all available information for a Loom video in one call: metadata, transcript, chapters, summary, tasks, and comments.
 
     Use this when you need a complete picture of a video. For just metadata, use get_video.
     """
-    _id(video_id, "video ID")
+    vid = _id(video_id, "video ID")
     client = _get_client(ctx)
-    video = await _call(client.get_video(video_id))
+    video = await _call(client.get_video(vid))
     if video.get("message"):
-        raise ToolError(f"Cannot access video {video_id}: {video['message']}")
+        raise ToolError(f"Cannot access video {vid}: {video['message']}")
     transcript, chapters, summary, comments, tasks = await asyncio.gather(
-        _call(client.get_transcript_text(video_id)),
-        _call(client.get_chapters(video_id)),
-        _call(client.get_summary(video_id)),
-        _call(client.get_comments(video_id)),
-        _call(client.get_tasks(video_id)),
+        _call(client.get_transcript_text(vid)),
+        _call(client.get_chapters(vid)),
+        _call(client.get_summary(vid)),
+        _call(client.get_comments(vid)),
+        _call(client.get_tasks(vid)),
     )
+
+    # Save individual pieces
+    _save(save_dir, vid, "metadata.json", json.dumps(video, indent=2))
 
     parts = [f"# {video.get('name', 'Unknown')}\n"]
 
@@ -793,30 +859,44 @@ async def get_video_details(
     parts.append("")
 
     if chapters and chapters.get("content"):
+        _save(save_dir, vid, "chapters.txt", chapters["content"])
         parts.append("## Chapters\n")
         parts.append(chapters["content"])
         parts.append("")
 
     if summary and summary.get("autoDescription"):
+        _save(save_dir, vid, "summary.txt", summary["autoDescription"])
         parts.append("## AI Summary\n")
         parts.append(summary["autoDescription"])
         parts.append("")
 
     if transcript:
+        _save(save_dir, vid, "transcript.txt", transcript)
         parts.append("## Transcript\n")
         parts.append(transcript)
         parts.append("")
 
     if tasks:
-        parts.append("## Action Items\n")
+        task_lines = []
         for t in tasks:
             owner = (t.get("owner") or {}).get("display_name", "Unassigned")
             ts = f" @{t['time_stamp']}s" if t.get("time_stamp") is not None else ""
             status = "resolved" if t.get("resolved_at") else "open"
-            parts.append(f"- [{status}] [{owner}{ts}] {t['content']}")
+            task_lines.append(f"[{status}] [{owner}{ts}] {t['content']}")
+        _save(save_dir, vid, "tasks.txt", "\n".join(task_lines))
+        parts.append("## Action Items\n")
+        for line in task_lines:
+            parts.append(f"- {line}")
         parts.append("")
 
     if comments:
+        comment_lines = []
+        for c in comments:
+            ts = f" @{c['time_stamp']}s" if c.get("time_stamp") is not None else ""
+            comment_lines.append(f"[{c['user_name']}{ts}] {c['content']}")
+            for r in c.get("children_comments") or []:
+                comment_lines.append(f"  └─ [{r['user_name']}] {r['content']}")
+        _save(save_dir, vid, "comments.txt", "\n".join(comment_lines))
         parts.append("## Comments\n")
         for c in comments:
             ts = f" @{c['time_stamp']}s" if c.get("time_stamp") is not None else ""
@@ -824,7 +904,9 @@ async def get_video_details(
             for r in c.get("children_comments") or []:
                 parts.append(f"  - [{r['user_name']}] {r['content']}")
 
-    return "\n".join(parts)
+    combined = "\n".join(parts)
+    path = _save(save_dir, vid, "details.md", combined)
+    return _with_saved(combined, path)
 
 
 @mcp.tool(
