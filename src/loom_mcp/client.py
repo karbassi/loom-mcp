@@ -1004,6 +1004,30 @@ class LoomClient:
         )
         return data.get("updateVideoTask") or {}
 
+    async def regenerate_mp4(self, video_id: str) -> dict:
+        data = await self.graphql(
+            "RegenerateMP4",
+            """mutation RegenerateMP4($input: RegenerateMP4Input!) {
+              regenerateMP4(input: $input) {
+                ... on RegenerateMP4Payload {
+                  __typename
+                  success
+                }
+                ... on GenericError {
+                  __typename
+                  message
+                }
+                ... on VideoNotFoundError {
+                  __typename
+                  message
+                }
+                __typename
+              }
+            }""",
+            {"input": {"videoId": video_id, "regenerationType": "DOWNLOAD"}},
+        )
+        return data.get("regenerateMP4") or {}
+
 
 def _fmt_ts(seconds: float) -> str:
     m, s = divmod(int(seconds), 60)

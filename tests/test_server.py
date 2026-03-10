@@ -74,6 +74,7 @@ CREATE_TOOLS = {
     "add_reaction",
     "duplicate_video",
     "create_folder",
+    "regenerate_mp4",
 }
 
 IDEMPOTENT_WRITE_TOOLS = {
@@ -110,7 +111,7 @@ async def test_all_tools_registered(client):
 @pytest.mark.anyio
 async def test_tool_count(client):
     tools = await client.list_tools()
-    assert len(tools) == 59
+    assert len(tools) == 60
 
 
 @pytest.mark.anyio
@@ -438,3 +439,52 @@ async def test_archive_videos_invalid_ids(client):
     )
     assert result.is_error
     assert "Invalid video ID" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_download_url_happy_path(client):
+    with patch(
+        "loom_mcp.server.LoomClient.get_download_url",
+        new_callable=AsyncMock,
+        return_value="https://cdn.loom.com/video.mp4?token=abc",
+    ):
+        result = await client.call_tool("get_download_url", {"video_id": VALID_ID})
+    assert "https://cdn.loom.com" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_get_download_url_no_url(client):
+    with patch(
+        "loom_mcp.server.LoomClient.get_download_url",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        result = await client.call_tool("get_download_url", {"video_id": VALID_ID})
+    text = result.content[0].text
+    assert "regenerate_mp4" in text
+    assert "30 seconds" in text
+
+
+@pytest.mark.anyio
+async def test_regenerate_mp4_happy_path(client):
+    with patch(
+        "loom_mcp.server.LoomClient.regenerate_mp4",
+        new_callable=AsyncMock,
+        return_value={"__typename": "RegenerateMP4Payload", "success": True},
+    ):
+        result = await client.call_tool("regenerate_mp4", {"video_id": VALID_ID})
+    assert '"success": true' in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_regenerate_mp4_not_found(client):
+    with patch(
+        "loom_mcp.server.LoomClient.regenerate_mp4",
+        new_callable=AsyncMock,
+        return_value={"__typename": "VideoNotFoundError", "message": "Video not found"},
+    ):
+        result = await client.call_tool(
+            "regenerate_mp4", {"video_id": VALID_ID}, raise_on_error=False
+        )
+    assert result.is_error
+    assert "Video not found" in result.content[0].text

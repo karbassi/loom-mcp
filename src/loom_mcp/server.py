@@ -73,7 +73,9 @@ def _get_client(ctx: Context) -> LoomClient:
     return ctx.lifespan_context["loom"]
 
 
-def _save(save_dir: str | None, video_id: str, filename: str, content: str) -> Path | None:
+def _save(
+    save_dir: str | None, video_id: str, filename: str, content: str
+) -> Path | None:
     if not save_dir or not content:
         return None
     video_dir = Path(save_dir).expanduser().resolve() / video_id
@@ -197,7 +199,9 @@ async def search_videos(
 async def get_video(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID (32-char hex string)"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get metadata for a Loom video including name, duration, owner, views, and creation date.
 
@@ -226,7 +230,9 @@ async def get_video(
 async def get_transcript(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get the full transcript of a Loom video with timestamps and speaker names.
 
@@ -254,7 +260,9 @@ async def get_transcript(
 async def get_captions(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get WebVTT captions of a Loom video with start and end timestamps per cue.
 
@@ -281,7 +289,9 @@ async def get_captions(
 async def get_summary(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get the AI-generated summary of a Loom video (1-2 concise sentences).
 
@@ -311,7 +321,9 @@ async def get_summary(
 async def get_chapters(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get AI-generated chapter markers with timestamps for a Loom video.
 
@@ -339,7 +351,9 @@ async def get_chapters(
 async def get_comments(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get comments on a Loom video, including threaded replies and timestamps."""
     client = _get_client(ctx)
@@ -371,11 +385,11 @@ async def get_download_url(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
 ) -> str:
-    """Get a signed download URL for the MP4 file of a Loom video. The URL is temporary and will expire."""
+    """Get a signed download URL for the MP4 file of a Loom video. The URL is temporary and will expire. If no URL is available, call regenerate_mp4 then retry this tool after ~30 seconds."""
     client = _get_client(ctx)
     url = await _call(client.get_download_url(_id(video_id, "video ID")))
     if not url:
-        return "No download URL available for this video."
+        return "No download URL available. Call regenerate_mp4 for this video, then retry get_download_url after ~30 seconds."
     return url
 
 
@@ -391,7 +405,9 @@ async def get_download_url(
 async def get_tasks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get AI-generated action items (tasks) from a Loom video, including assignee, status, and timestamp."""
     client = _get_client(ctx)
@@ -422,7 +438,9 @@ async def get_tasks(
 async def get_reactions(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get emoji reactions on a Loom video, including who reacted and at what timestamp."""
     client = _get_client(ctx)
@@ -561,7 +579,9 @@ async def get_space(
 async def get_backlinks(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get external references (backlinks) to a Loom video — where it's been shared or embedded."""
     client = _get_client(ctx)
@@ -592,7 +612,9 @@ async def get_backlinks(
 async def get_key_takeaways(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get AI-generated key takeaways from a Loom video as a bullet list.
 
@@ -620,7 +642,9 @@ async def get_key_takeaways(
 async def get_tags(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get tags on a Loom video."""
     client = _get_client(ctx)
@@ -645,7 +669,9 @@ async def get_tags(
 async def get_description(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get the AI-generated description of a Loom video with timestamped sections and bullet points.
 
@@ -822,7 +848,9 @@ async def get_comment_reactions(
 async def get_video_details(
     ctx: Context,
     video_id: Annotated[str, "The Loom video ID"],
-    save_dir: Annotated[str | None, "Directory to save output to (omit to skip saving)"] = None,
+    save_dir: Annotated[
+        str | None, "Directory to save output to (omit to skip saving)"
+    ] = None,
 ) -> str:
     """Get all available information for a Loom video in one call: metadata, transcript, chapters, summary, tasks, and comments.
 
@@ -1608,6 +1636,27 @@ async def share_videos_to_spaces(
             _ids(video_ids, "video ID"), _ids(space_ids, "space ID")
         )
     )
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool(
+    tags={"write"},
+    timeout=30.0,
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+    },
+)
+async def regenerate_mp4(
+    ctx: Context,
+    video_id: Annotated[str, "The Loom video ID"],
+) -> str:
+    """Trigger MP4 regeneration for a Loom video. Use this when get_download_url reports that no URL is available. Regeneration is asynchronous — after triggering, wait ~30 seconds then retry get_download_url."""
+    client = _get_client(ctx)
+    result = await _call(client.regenerate_mp4(_id(video_id, "video ID")))
+    if result.get("message"):
+        raise ToolError(f"Failed to regenerate MP4: {result['message']}")
     return json.dumps(result, indent=2)
 
 
