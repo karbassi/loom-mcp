@@ -81,6 +81,7 @@ class LoomClient:
             "GetLoomsForLibrary",
             """query GetLoomsForLibrary($limit: Int!, $cursor: String, $source: LoomsSource!, $sortType: LoomsSortType!, $sortOrder: LoomsSortOrder!, $filters: [[LoomsCollectionFilter!]!]) {
               getLooms {
+                __typename
                 ... on GetLoomsPayload {
                   videos(first: $limit, after: $cursor, source: $source, sortType: $sortType, sortOrder: $sortOrder, filters: $filters) {
                     edges { cursor node { id name visibility } }
@@ -98,7 +99,13 @@ class LoomClient:
                 "cursor": cursor,
             },
         )
-        videos = data["getLooms"]["videos"]
+        looms = data["getLooms"]
+        if "videos" not in looms:
+            raise LoomAPIError(
+                f"Loom session expired or unauthorized ({looms.get('__typename', 'unknown')}). "
+                "Get a fresh connect.sid cookie from your browser."
+            )
+        videos = looms["videos"]
         return {
             "videos": [e["node"] for e in videos["edges"]],
             "endCursor": videos["pageInfo"]["endCursor"],
@@ -113,6 +120,7 @@ class LoomClient:
             "SearchVideos",
             """query SearchVideos($searchQuery: String!, $first: Int, $after: String) {
               searchVideos {
+                __typename
                 ... on SearchVideosPayload {
                   videoResults(searchQuery: $searchQuery, first: $first, after: $after) {
                     edges { node { ... on VideoSearchResult { video { id name createdAt playable_duration } } } }
@@ -123,7 +131,13 @@ class LoomClient:
             }""",
             {"searchQuery": query, "first": limit, "after": cursor},
         )
-        results = data["searchVideos"]["videoResults"]
+        search = data["searchVideos"]
+        if "videoResults" not in search:
+            raise LoomAPIError(
+                f"Loom session expired or unauthorized ({search.get('__typename', 'unknown')}). "
+                "Get a fresh connect.sid cookie from your browser."
+            )
+        results = search["videoResults"]
         return {
             "videos": [e["node"]["video"] for e in results["edges"]],
             "endCursor": results["pageInfo"]["endCursor"],
