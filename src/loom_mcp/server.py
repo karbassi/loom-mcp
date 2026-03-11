@@ -41,7 +41,9 @@ if _PROJECT_ROOT is not None:
 
 @lifespan
 async def app_lifespan(server):
-    cookie = os.environ.get("LOOM_COOKIE")
+    cookie = os.environ.get("LOOM_COOKIE", "")
+    if cookie and not cookie.startswith("connect.sid="):
+        cookie = f"connect.sid={cookie}"
     if cookie:
         client = LoomClient(cookies=cookie)
     else:
