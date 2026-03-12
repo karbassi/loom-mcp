@@ -848,7 +848,7 @@ async def get_video_details(
 
     parts = [f"# {video.get('name', 'Unknown')}\n"]
 
-    duration = video.get("playable_duration", 0)
+    duration = video.get("playable_duration") or 0
     m, s = divmod(int(duration), 60)
     h, m = divmod(m, 60)
     dur_str = f"{h}h {m}m {s}s" if h else f"{m}m {s}s"
