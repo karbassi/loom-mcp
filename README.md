@@ -1,5 +1,6 @@
 # Loom MCP Server
 
+[![PyPI](https://img.shields.io/pypi/v/mcp-loom.svg)](https://pypi.org/project/mcp-loom/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -35,7 +36,7 @@ The cookie lasts about 30 days. See [Troubleshooting](#troubleshooting) if you g
 
 ### Installation
 
-Pick your MCP client below for the appropriate config. Each uses `uvx` to install and run directly from GitHub — no clone needed.
+Pick your MCP client below for the appropriate config. Each uses `uvx` to install and run from PyPI — no clone needed.
 
 <details>
 <summary><b>Claude Desktop</b></summary>
@@ -63,7 +64,7 @@ Add to your `claude_desktop_config.json`:
 <summary><b>Claude Code</b></summary>
 
 ```sh
-claude mcp add loom -- uvx --from git+https://github.com/karbassi/loom-mcp.git loom-mcp
+claude mcp add loom -- uvx --from mcp-loom loom-mcp
 ```
 
 Then set the env var in your shell or `.env`:
@@ -240,7 +241,7 @@ If you get auth errors, your `connect.sid` cookie has expired (~30 days). Grab a
 ### Debugging with MCP Inspector
 
 ```sh
-npx @modelcontextprotocol/inspector uvx --from git+https://github.com/karbassi/loom-mcp.git loom-mcp
+npx @modelcontextprotocol/inspector uvx --from mcp-loom loom-mcp
 ```
 
 ## Contributing
