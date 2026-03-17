@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to loom-mcp!
+Thanks for your interest in contributing to mcp-loom!
 
 ## Getting started
 
