@@ -123,7 +123,7 @@ Add to your VS Code settings (`.vscode/mcp.json`):
 <summary><b>Local clone</b></summary>
 
 ```sh
-git clone git@github.com:karbassi/loom-mcp.git
+git clone git@github.com:karbassi/mcp-loom.git
 cd loom-mcp
 uv sync
 uv run mcp-loom
@@ -246,7 +246,7 @@ npx @modelcontextprotocol/inspector uvx mcp-loom
 
 ## Contributing
 
-Issues and pull requests are welcome on [GitHub](https://github.com/karbassi/loom-mcp).
+Issues and pull requests are welcome on [GitHub](https://github.com/karbassi/mcp-loom).
 
 ## License
 

@@ -53,7 +53,7 @@ async def app_lifespan(server):
         if not auth_file:
             raise ValueError(
                 "Set LOOM_COOKIE or LOOM_AUTH_FILE. "
-                "See https://github.com/karbassi/loom-mcp#authentication"
+                "See https://github.com/karbassi/mcp-loom#authentication"
             )
         client = LoomClient(auth_file=auth_file)
 

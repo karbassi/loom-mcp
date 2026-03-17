@@ -5,7 +5,7 @@ Thanks for your interest in contributing to mcp-loom!
 ## Getting started
 
 ```sh
-git clone git@github.com:karbassi/loom-mcp.git
+git clone git@github.com:karbassi/mcp-loom.git
 cd loom-mcp
 uv sync
 ```
