@@ -67,7 +67,7 @@ mcp = FastMCP(
     "Loom",
     instructions="Access Loom videos, transcripts, summaries, and comments.",
     lifespan=app_lifespan,
-    version="1.1.0",
+    version="1.2.0",
 )
 
 
