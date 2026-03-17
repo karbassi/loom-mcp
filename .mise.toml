@@ -1,0 +1,46 @@
+[tools]
+python = "3.13"
+uv = "latest"
+
+[env]
+UV_PROJECT_ENVIRONMENT = "{{cwd}}/.venv"
+
+[tasks.install]
+description = "Install dependencies"
+run = "uv sync --all-extras"
+
+[tasks.test]
+description = "Run tests"
+run = "uv run --with pytest pytest tests/ -v"
+
+[tasks.lint]
+description = "Run ruff linter"
+run = "uv run --with ruff ruff check ."
+
+[tasks.format]
+description = "Run ruff formatter"
+run = "uv run --with ruff ruff format ."
+
+[tasks.format-check]
+description = "Check formatting without writing"
+run = "uv run --with ruff ruff format --check ."
+
+[tasks.check]
+description = "Run lint and format check"
+depends = ["lint", "format-check"]
+
+[tasks.install-hooks]
+description = "Install git pre-commit hook"
+run = """
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/sh
+mise run format
+git add -u
+mise run lint && mise run test
+EOF
+chmod +x .git/hooks/pre-commit
+echo "pre-commit hook installed"
+"""
+
+[hooks]
+enter = "[ -f .git/hooks/pre-commit ] || mise run install-hooks"

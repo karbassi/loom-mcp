@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- GitHub Actions CI workflow (lint, format, test) triggered on push and PRs
+- PyPI publish workflow using OIDC trusted publishing, triggered on version tags
+- mise tasks: `install`, `lint`, `format`, `test`, `build`
+- `install-hooks` mise task and `mise enter` hook for automatic pre-commit setup
+
+### Changed
+
+- Renamed PyPI package from `loom-mcp` to `mcp-loom`
+- Pre-commit hook now auto-formats and re-stages files
+
+### Fixed
+
+- Publish workflow permissions include `contents: read` so `actions/checkout` works alongside `id-token: write`
+
 ## [1.1.0] - 2026-02-17
 
 ### Added
