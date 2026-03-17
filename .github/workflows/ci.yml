@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+
+      - name: Install dependencies
+        run: mise run install
+
+      - name: Lint
+        run: mise run lint
+
+      - name: Format check
+        run: mise run format-check
+
+      - name: Test
+        run: mise run test
+        env:
+          LOOM_COOKIE: test=dummy

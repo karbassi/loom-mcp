@@ -3,3 +3,4 @@ __pycache__/
 auth.json
 .env
 *.har
+.temp/
