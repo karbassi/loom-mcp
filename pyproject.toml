@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-loom-mcp = "loom_mcp.server:main"
+mcp-loom = "loom_mcp.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/loom_mcp"]

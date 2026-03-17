@@ -49,7 +49,7 @@ Add to your `claude_desktop_config.json`:
     "loom": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "loom-mcp"],
+      "args": ["mcp-loom"],
       "env": {
         "LOOM_COOKIE": "connect.sid=s%3A..."
       }
@@ -64,7 +64,7 @@ Add to your `claude_desktop_config.json`:
 <summary><b>Claude Code</b></summary>
 
 ```sh
-claude mcp add loom -- uvx --from mcp-loom loom-mcp
+claude mcp add loom -- uvx mcp-loom
 ```
 
 Then set the env var in your shell or `.env`:
@@ -86,7 +86,7 @@ Add to your Cursor MCP settings (`.cursor/mcp.json`):
     "loom": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "loom-mcp"],
+      "args": ["mcp-loom"],
       "env": {
         "LOOM_COOKIE": "connect.sid=s%3A..."
       }
@@ -108,7 +108,7 @@ Add to your VS Code settings (`.vscode/mcp.json`):
     "loom": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/karbassi/loom-mcp.git", "loom-mcp"],
+      "args": ["mcp-loom"],
       "env": {
         "LOOM_COOKIE": "connect.sid=s%3A..."
       }
@@ -126,7 +126,7 @@ Add to your VS Code settings (`.vscode/mcp.json`):
 git clone git@github.com:karbassi/loom-mcp.git
 cd loom-mcp
 uv sync
-uv run loom-mcp
+uv run mcp-loom
 ```
 
 Or reference it from any MCP client:
@@ -137,7 +137,7 @@ Or reference it from any MCP client:
     "loom": {
       "type": "stdio",
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/loom-mcp", "loom-mcp"],
+      "args": ["run", "--directory", "/path/to/loom-mcp", "mcp-loom"],
       "env": {
         "LOOM_COOKIE": "connect.sid=s%3A..."
       }
@@ -241,7 +241,7 @@ If you get auth errors, your `connect.sid` cookie has expired (~30 days). Grab a
 ### Debugging with MCP Inspector
 
 ```sh
-npx @modelcontextprotocol/inspector uvx --from mcp-loom loom-mcp
+npx @modelcontextprotocol/inspector uvx mcp-loom
 ```
 
 ## Contributing
