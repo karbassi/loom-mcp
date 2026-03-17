@@ -488,3 +488,26 @@ async def test_regenerate_mp4_not_found(client):
         )
     assert result.is_error
     assert "Video not found" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_regenerate_mp4_generic_error(client):
+    with patch(
+        "loom_mcp.server.LoomClient.regenerate_mp4",
+        new_callable=AsyncMock,
+        return_value={"__typename": "GenericError", "message": "Something went wrong"},
+    ):
+        result = await client.call_tool(
+            "regenerate_mp4", {"video_id": VALID_ID}, raise_on_error=False
+        )
+    assert result.is_error
+    assert "Something went wrong" in result.content[0].text
+
+
+@pytest.mark.anyio
+async def test_regenerate_mp4_invalid_id(client):
+    result = await client.call_tool(
+        "regenerate_mp4", {"video_id": "bad id"}, raise_on_error=False
+    )
+    assert result.is_error
+    assert "Invalid video ID" in result.content[0].text
