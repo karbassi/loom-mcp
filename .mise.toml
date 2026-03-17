@@ -28,3 +28,17 @@ run = "uv run --with ruff ruff format --check ."
 [tasks.check]
 description = "Run lint and format check"
 depends = ["lint", "format-check"]
+
+[tasks.install-hooks]
+description = "Install git pre-commit hook"
+run = """
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/sh
+mise run check && mise run test
+EOF
+chmod +x .git/hooks/pre-commit
+echo "pre-commit hook installed"
+"""
+
+[hooks]
+enter = "[ -f .git/hooks/pre-commit ] || mise run install-hooks"
